@@ -1,6 +1,6 @@
 # Archetypes
 
-Seven compositions recur across the ~440 premium hero templates on motionsites.ai. Pick one per page.
+Seven compositions recur across the ~440 premium hero templates in prompt galleries. Pick one per page.
 Mixing two usually produces the average you are trying to avoid; if you must, take the composition
 from one and only the palette from another.
 

@@ -1,6 +1,6 @@
 # Cinematic Motion UI
 
-**A Claude skill for building cinematic, motion-rich hero sections and landing pages, the kind you see on [motionsites.ai](https://motionsites.ai), without the tell-tale look of AI-generated UI.**
+**A Claude skill for building cinematic, motion-rich hero sections and landing pages, the kind you see in premium template galleries, without the tell-tale look of AI-generated UI.**
 
 ![Hạ Long Atelier: opening motion](docs/showcase/ha-long-atelier.gif)
 
@@ -56,7 +56,7 @@ Three independent judges (separate Claude sessions acting as Awwwards-level art 
 | **With this skill (current version)** | **35%** | **6.9** | **4.7** |
 | With this skill (first version) | 46% | 6.3 | 6.8 |
 | Same prompts, no skill | 56% | 6.1 | 7.7 |
-| Real templates from motionsites.ai | 56% | 5.5 | 8.4 |
+| Real templates from a premium gallery | 56% | 5.5 | 8.4 |
 | Generic "AI SaaS" page (control) | 97% | 1.7 | 14 |
 
 <img src="docs/showcase/control-generic-ai.jpg" width="360" alt="Control page: a generic AI-made SaaS hero">
@@ -88,7 +88,7 @@ Just ask; the skill triggers on its own:
 - "Build a hero for my flower shop in Hanoi: premium, animated, nothing like an AI template"
 - "Make a launch page for our CLI tool: dark, cinematic, not the purple-gradient look"
 - "Our studio homepage looks cheap. Redo the hero so it feels designed"
-- "Write a detailed prompt I can paste into Lovable to build a MotionSites-style hero"
+- "Write a detailed prompt I can paste into Lovable to build a gallery-style cinematic hero"
 
 To force it, start your request with `/cinematic-motion-ui`. Prompts in English and Vietnamese both work.
 
@@ -147,7 +147,7 @@ Many popular Google Fonts ship **no Vietnamese subset**, including Instrument Se
 
 ## Credits
 
-The skill was distilled from a study of about 440 hero templates on [motionsites.ai](https://motionsites.ai) and the way their prompts specify every value. It contains no MotionSites prompts, images or assets. Every example page was built from scratch by Claude, for fictional brands.
+Every example page was built from scratch by Claude, for fictional brands.
 
 **Author:** HPhat ([@vhphat2206](https://github.com/vhphat2206)), built together with Claude.
 

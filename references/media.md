@@ -1,6 +1,6 @@
 # Media
 
-On galleries like MotionSites, most of the "wow" is the media: AI-generated stills and short video
+On premium template galleries, most of the "wow" is the media: AI-generated stills and short video
 loops with a consistent cinematic look (stills from image models, loops from video models). The UI
 is designed around a specific image, not on top of a generic one.
 

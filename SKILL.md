@@ -1,6 +1,6 @@
 ---
 name: cinematic-motion-ui
-description: Build cinematic, motion-rich hero sections and landing pages at the level of premium prompt galleries like motionsites.ai (art-directed media, mixed typography, choreographed entrance motion, liquid-metal and glass materials) that do not read as AI-generated. Use this whenever the user wants a hero, landing page, launch page, portfolio intro or website UI that should feel premium, cinematic, animated, award-level, "đỉnh", "xịn", "sang", "không giống AI làm", in the style of MotionSites, Awwwards or Framer templates, or asks for video-background heroes, entrance animations, scroll motion, 3D feel or tasteful glassmorphism. Also use it to upgrade an existing page that looks generic, templated or AI-made, or to write a precise build prompt or spec for such a page. Works for single-file HTML and for React/Next/Tailwind/Framer Motion. Not for dashboards, admin panels, form-heavy app screens, slide decks or presentations, emails, or standalone image generation.
+description: Build cinematic, motion-rich hero sections and landing pages at the level of premium prompt galleries (art-directed media, mixed typography, choreographed entrance motion, liquid-metal and glass materials) that do not read as AI-generated. Use this whenever the user wants a hero, landing page, launch page, portfolio intro or website UI that should feel premium, cinematic, animated, award-level, "đỉnh", "xịn", "sang", "không giống AI làm", in the style of premium gallery, Awwwards or Framer templates, or asks for video-background heroes, entrance animations, scroll motion, 3D feel or tasteful glassmorphism. Also use it to upgrade an existing page that looks generic, templated or AI-made, or to write a precise build prompt or spec for such a page. Works for single-file HTML and for React/Next/Tailwind/Framer Motion. Not for dashboards, admin panels, form-heavy app screens, slide decks or presentations, emails, or standalone image generation.
 ---
 
 # Cinematic Motion UI
@@ -10,7 +10,7 @@ badge, a bold Inter headline, a purple-to-pink glow, two buttons, three icon car
 up at the same speed. Nothing is wrong and nothing was decided. People recognise that average
 instantly, and that recognition is what "looks AI-made" means.
 
-Gallery-grade pages (the kind sold as premium prompts on motionsites.ai) differ in four ways, and
+Gallery-grade pages (the kind sold as premium prompts) differ in four ways, and
 this skill is built around them:
 
 1. **One strong visual idea carries the page.** A cinematic image or video, a giant word, a
@@ -23,7 +23,7 @@ this skill is built around them:
    easing family, so the page *assembles* instead of fading in. The page is still complete and
    readable if no animation ever runs.
 4. **Specific values everywhere.** Exact hex, exact px, exact easing, exact copy. Vagueness is how
-   defaults (and the AI look) leak in. MotionSites prompts are 15–40 KB of exact values for one
+   defaults (and the AI look) leak in. Premium gallery prompts are 15–40 KB of exact values for one
    screen. That precision is the product.
 
 ## The run
@@ -39,7 +39,7 @@ short direction card in your reply or in a scratch file, using `references/spec-
 - **Subject & audience**: who this is for, in one sentence, in the user's own nouns.
 - **Archetype**: pick one of the seven in `references/archetypes.md`. Read that file now; it gives
   each archetype's composition, type, palette, materials and signature motion. If the user names a
-  reference (a site, a MotionSites template), map it to the closest archetype.
+  reference (a site, a gallery template), map it to the closest archetype.
 - **Three mood words** that are not "modern, clean, sleek" (those describe every page).
 - **Palette**: background, ink, muted ink, at most one accent. Name hex values.
 - **Type pair**: from `references/typography.md`. Note the role of each face.
