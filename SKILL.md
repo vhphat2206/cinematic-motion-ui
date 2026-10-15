@@ -85,10 +85,9 @@ grey boxes. Both are the fastest way to look unfinished.
   and backgrounds exactly instead of you retyping them. (`assets/starter.html` is the same starter
   already inlined, for reading.) The `examples/` pages show the quality bar. In blind
   reviews they scored as less AI-looking than the gallery templates they learned from:
-  `cinematic-bay-hero.html` (A: timber louvres opening onto a misty bay, Vietnamese),
+  `cinematic-bay-hero.html` (A: timber louvres opening onto a misty bay),
   `dark-code-review-hero.html` (B: the product's own diff is the image, no accent-word trope),
-  `light-window-hero.html` (light A/C hybrid: morning sun drifting across a wall in real time,
-  Vietnamese). Skim the one closest to your brief for the level of detail and the way one concept
+  `light-window-hero.html` (light A/C hybrid: morning sun drifting across a wall in real time). Skim the one closest to your brief for the level of detail and the way one concept
   ties image, type and motion together. Don't copy its composition, copy or palette: each brief
   deserves its own idea.
 - **React / Next / Tailwind / Framer Motion**: read `references/react-port.md`. Keep entrance
@@ -201,7 +200,7 @@ Materials
 | `assets/starter.html` | Single-file builds |
 | `assets/motion-kit.css`, `assets/motion-kit.js` | Any build (inline them or import them) |
 | `assets/backgrounds/*.js` | Generative media layer |
-| `examples/*.html` | To calibrate the quality bar (three heroes, two in Vietnamese) |
+| `examples/*.html` | To calibrate the quality bar (three heroes) |
 | `scripts/audit.py` | Static AI-tell and robustness audit |
 | `scripts/runtime_check.js` | In-browser checks after load |
 | `scripts/inline_kit.py` | Build the final single file from a source with kit/background placeholders |

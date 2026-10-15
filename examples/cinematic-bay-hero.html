@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hạ Long Atelier · Xưởng kiến trúc resort ven biển Quảng Ninh</title>
-<meta name="description" content="Hạ Long Atelier là xưởng kiến trúc chuyên resort ven biển Quảng Ninh: xoay từng phòng về một hòn đảo đá, dựng vách lá chớp gỗ để giữ mùa đông ở bên ngoài.">
+<title>Hạ Long Atelier · Coastal resort architects, Quảng Ninh</title>
+<meta name="description" content="Hạ Long Atelier designs coastal resorts in Quảng Ninh: every room turned toward a limestone island, timber louvres to keep the winter out.">
 <meta name="theme-color" content="#e7e6e0">
 <!--
-  Archetype A · cinematic full-bleed, light variant (sương sớm / morning sea-mist).
+  Archetype A · cinematic full-bleed, light variant (morning sea-mist).
   Concept: the hero is the view from inside a resort room. A wall of teak louvre blades opens left → right
   to reveal Hạ Long in mist; the last blades on the right stay half-closed, which is the headline made literal
-  ("Mở phòng ra vịnh, khép lại trước gió bấc").
+  ("Open to the bay, shut against the north wind").
   Type: Archivo (display 320 at wdth 104, UI 400–600) + Geist Mono (micro-copy). Both ship a Vietnamese subset.
   Palette: fog #e7e6e0 · ink #17201e · muted #4b5754 · teak #3a2719 · cream #efe7da · accent #c58a52
   Accent used three times only: the closed blade in the logo mark, the north-east petal of the wind rose,
@@ -21,7 +21,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..110,300..600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
 <!-- Hold every entrance at frame 0 (closed louvres, text below its masks) until the two faces are ready, so the
      headline never rises in a fallback face. JS-only and capped at 900 ms: with JS off the class is never added. -->
-<script>(function(r){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;r.classList.add("cm-hold");var go=function(){r.classList.remove("cm-hold")};setTimeout(go,900);if(document.fonts&&document.fonts.load){Promise.all([document.fonts.load('320 64px "Archivo"',"Mở phòng ra vịnh"),document.fonts.load('400 16px "Archivo"',"Xưởng"),document.fonts.load('400 12px "Geist Mono"',"GIÓ MÙA ĐÔNG BẮC")]).then(go,go)}}catch(e){}})(document.documentElement);</script>
+<script>(function(r){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;r.classList.add("cm-hold");var go=function(){r.classList.remove("cm-hold")};setTimeout(go,900);if(document.fonts&&document.fonts.load){Promise.all([document.fonts.load('320 64px "Archivo"',"Open to the bay"),document.fonts.load('400 16px "Archivo"',"Studio"),document.fonts.load('400 12px "Geist Mono"',"NORTHEAST MONSOON")]).then(go,go)}}catch(e){}})(document.documentElement);</script>
 <style>
 /* ---- anti-flash: background first ---- */
 html,body{background:#e7e6e0}
@@ -421,40 +421,40 @@ h1 .mask-line{padding:.24em .15em .16em;margin:-.24em -.15em -.16em}
 
 <div class="page">
   <header class="header">
-    <a class="logo appear appear--scale" href="#top" style="--d:.5s" aria-label="Hạ Long Atelier, về đầu trang">
+    <a class="logo appear appear--scale" href="#top" style="--d:.5s" aria-label="Hạ Long Atelier, back to top">
       <svg class="mark" viewBox="0 0 24 22" aria-hidden="true" focusable="false">
         <rect x=".4" y="0" width="1" height="22"/><rect x="4.9" y="0" width="1.5" height="22"/><rect x="9.6" y="0" width="2.4" height="22"/>
         <rect x="14.9" y="0" width="3.3" height="22"/><rect class="mark-a" x="20.1" y="0" width="3.9" height="22"/>
       </svg>
       <span class="wm" aria-hidden="true"><b>Hạ Long</b><span class="at">Atelier</span></span>
     </a>
-    <nav class="nav" id="site-nav" aria-label="Điều hướng chính">
-      <a class="appear appear--soft" href="#cong-trinh" style="--d:.6s;--dur:.9s">Công trình</a>
-      <a class="appear appear--scale" href="#phuong-phap" style="--d:.68s;--dur:.9s">Phương pháp</a>
-      <a class="appear appear--soft" href="#xuong-ve" style="--d:.76s;--dur:.9s">Xưởng vẽ</a>
-      <a class="nav-only" href="#lien-he">Liên hệ</a>
-      <p class="nav-foot micro">Gió mùa Đông Bắc · tháng 11 – tháng 3</p>
+    <nav class="nav" id="site-nav" aria-label="Main navigation">
+      <a class="appear appear--soft" href="#cong-trinh" style="--d:.6s;--dur:.9s">Projects</a>
+      <a class="appear appear--scale" href="#phuong-phap" style="--d:.68s;--dur:.9s">Method</a>
+      <a class="appear appear--soft" href="#xuong-ve" style="--d:.76s;--dur:.9s">Studio</a>
+      <a class="nav-only" href="#lien-he">Contact</a>
+      <p class="nav-foot micro">Northeast monsoon · November – March</p>
     </nav>
-    <a class="contact appear appear--fade" href="#lien-he" style="--d:1.62s;--dur:.8s">Liên hệ
+    <a class="contact appear appear--fade" href="#lien-he" style="--d:1.62s;--dur:.8s">Contact
       <svg viewBox="0 0 13 9" aria-hidden="true" focusable="false"><path d="M0 4.5h11.6M8.2 1l3.5 3.5L8.2 8" fill="none" stroke="currentColor" stroke-width="1.1"/></svg></a>
-    <button class="burger appear appear--scale" type="button" style="--d:.9s" aria-controls="site-nav" aria-expanded="false" aria-label="Mở menu"><i></i><i></i><i></i></button>
+    <button class="burger appear appear--scale" type="button" style="--d:.9s" aria-controls="site-nav" aria-expanded="false" aria-label="Open menu"><i></i><i></i><i></i></button>
   </header>
 
   <main class="hero" id="top">
     <div class="copy">
       <h1>
-        <span class="mask-line"><span class="appear appear--mask" style="--d:.92s;--dur:1.25s">Mở phòng ra vịnh,</span></span>
-        <span class="mask-line"><span class="appear appear--mask" style="--d:1.06s;--dur:1.25s">khép lại trước <span class="nb">gió bấc.</span></span></span>
+        <span class="mask-line"><span class="appear appear--mask" style="--d:.92s;--dur:1.25s">Open to the bay,</span></span>
+        <span class="mask-line"><span class="appear appear--mask" style="--d:1.06s;--dur:1.25s">shut against <span class="nb">the north wind.</span></span></span>
       </h1>
-      <p class="lede appear appear--soft" style="--d:1.26s;--dur:1.25s">Xưởng kiến trúc chuyên resort ven biển Quảng Ninh. Chúng tôi xoay từng phòng về một hòn đảo đá, rồi dựng vách lá chớp gỗ để giữ mùa đông ở bên ngoài.</p>
+      <p class="lede appear appear--soft" style="--d:1.26s;--dur:1.25s">Architects of coastal resorts in Quảng Ninh. We turn every room toward a limestone island, then raise timber louvres to keep the winter outside.</p>
       <div class="actions">
-        <a class="btn btn-solid appear appear--wipe-x" href="#gui-khu-dat" style="--d:1.42s">Gửi bản đồ khu đất
+        <a class="btn btn-solid appear appear--wipe-x" href="#gui-khu-dat" style="--d:1.42s">Send us your site plan
           <svg viewBox="0 0 18 10" aria-hidden="true" focusable="false"><path d="M0 5h16.4M12.4 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></a>
-        <a class="btn btn-text appear appear--side" href="#cong-trinh" style="--d:1.54s">Xem công trình</a>
+        <a class="btn btn-text appear appear--side" href="#cong-trinh" style="--d:1.54s">See our projects</a>
       </div>
     </div>
 
-    <aside class="wind" aria-label="Khí hậu Quảng Ninh">
+    <aside class="wind" aria-label="Quảng Ninh climate">
       <svg class="rose" viewBox="0 0 58 62" aria-hidden="true" focusable="false">
         <text x="29" y="5.5" text-anchor="middle">B</text>
         <circle class="ring appear appear--fade" style="--d:1.7s" cx="29" cy="31" r="23"/>
@@ -469,8 +469,8 @@ h1 .mask-line{padding:.24em .15em .16em;margin:-.24em -.15em -.16em}
         <g transform="translate(29 31) rotate(45)"><path class="pt pt--ne appear appear--grow" style="--d:2.1s;--dur:1.3s" d="M0 0L2.2 -8.6L0 -21L-2.2 -8.6Z"/></g>
       </svg>
       <p class="micro">
-        <span class="mask-line"><span class="appear appear--mask" style="--d:1.84s;--dur:.9s">Gió mùa Đông Bắc</span></span>
-        <span class="mask-line"><span class="appear appear--mask dim" style="--d:1.92s;--dur:.9s">Tháng 11 – tháng 3</span></span>
+        <span class="mask-line"><span class="appear appear--mask" style="--d:1.84s;--dur:.9s">Northeast monsoon</span></span>
+        <span class="mask-line"><span class="appear appear--mask dim" style="--d:1.92s;--dur:.9s">November – March</span></span>
       </p>
     </aside>
   </main>
@@ -778,7 +778,7 @@ function ShaderField(canvas, o) {
   function setMenu(open) {
     document.body.classList.toggle("menu-open", open);
     burger.setAttribute("aria-expanded", String(open));
-    burger.setAttribute("aria-label", open ? "Đóng menu" : "Mở menu");
+    burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
   }
   burger.addEventListener("click", function () { setMenu(!document.body.classList.contains("menu-open")); });
   nav.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", function () { setMenu(false); }); });
