@@ -90,7 +90,9 @@ Just ask; the skill triggers on its own:
 - "Our studio homepage looks cheap. Redo the hero so it feels designed"
 - "Write a detailed prompt I can paste into Lovable to build a gallery-style cinematic hero"
 
-To force it, start your request with `/cinematic-motion-ui`. Prompts in English and Vietnamese both work.
+To force it, start your request with `/cinematic-motion-ui`.
+
+**Economy mode:** add "economy mode" or "save tokens" to the request. The skill then reads only its main file, writes a shorter plan and checks the page once on desktop and once on mobile. That uses roughly a third of the tokens of a full run. Prompts in English and Vietnamese both work.
 
 Claude then follows a seven-step run:
 

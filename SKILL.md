@@ -26,6 +26,22 @@ this skill is built around them:
    defaults (and the AI look) leak in. Premium gallery prompts are 15–40 KB of exact values for one
    screen. That precision is the product.
 
+## Economy mode
+
+If the user asks to save tokens or go fast ("economy", "quick", "cheap", "save tokens", "tiết kiệm",
+"làm nhanh", "đỡ tốn token"), keep the same quality bar but cut the expensive parts:
+
+- Read only this file plus the one reference you need most (usually `references/archetypes.md`;
+  `references/typography.md` instead if the page is in Vietnamese). Skip the rest.
+- Write the direction card in 4–5 lines and skip the full build spec.
+- Start from `assets/starter.src.html` and build with `scripts/inline_kit.py`; don't retype the kit.
+- Verify with `scripts/audit.py` (it costs almost nothing), then take one screenshot at 1440×900
+  and one at 375×812. Fix only what is clearly broken, in one pass. No extra fix-and-look rounds, no
+  mid-animation frames, no extra viewport sizes, and no subagents.
+- Keep the report to three or four lines.
+
+Say in one line that economy mode is on, so the user knows the page got a lighter check.
+
 ## The run
 
 Work through these steps in order. Steps 1–2 are thinking on paper and take a few minutes; skipping
