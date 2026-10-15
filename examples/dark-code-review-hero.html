@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sieve — code review that reads every pull request</title>
+<meta name="description" content="Sieve reads each pull request as it opens and leaves the comments your most careful senior engineer would.">
+<meta name="theme-color" content="#0b0d0e">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230b0d0e'/%3E%3Crect x='6.2' y='3.5' width='1.4' height='17' fill='%23e8ebe8' opacity='.45'/%3E%3Crect x='10' y='5.4' width='9.5' height='2.2' rx='1.1' fill='%23e8ebe8'/%3E%3Crect x='10' y='10.9' width='6' height='2.2' rx='1.1' fill='%23e8ebe8'/%3E%3Crect x='10' y='16.4' width='8' height='2.2' rx='1.1' fill='%23e8ebe8'/%3E%3Crect x='5.1' y='9.6' width='3.6' height='4.8' rx='1' fill='%23f2b33d'/%3E%3C/svg%3E">
+<!--
+  Sieve hero · archetype B (dark monochrome tech), product-as-image.
+  The media is the code itself: a borderless TypeScript file bleeding off the right edge. A reading band
+  runs down the gutter, line 35 flags amber, and the file splits open so Sieve's inline comment can unfold
+  in the gap, exactly where a reviewer would leave it.
+  Type: Archivo (display at wdth 82 / UI at wdth 100) · IBM Plex Mono (code, comment code, micro-copy).
+  Accent: amber #f2b33d = "the flag". Used only on the gutter flag, the bug highlight, the "blocking:" prefix
+  and the logo's gutter tick.
+  All repository names, code and PR numbers are illustrative (see notes.md).
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,400..700&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+/* ---- anti-flash: background first ---- */
+html,body{background:#0b0d0e}
+
+/* ==== motion-kit.css (inlined) ==== */
+/* ==========================================================================
+   motion-kit.css: entrance vocabulary with a visible resting state.
+   Usage: <h1 class="appear appear--mask" style="--d:.42s">…</h1>
+   Elements are fully visible in their normal styles; the hidden state exists only in each
+   keyframe's `from`, applied during the delay by fill-mode `both`. Pair with motion-kit.js
+   (MK.appear) for the `.is-in` cleanup and the failsafe.
+   ========================================================================== */
+
+:root{
+  --ease-expo:cubic-bezier(.16,1,.3,1);
+  --ease-draw:cubic-bezier(.62,.04,.22,1);
+  --ease-wipe:cubic-bezier(.77,0,.18,1);
+  --ease-settle:cubic-bezier(.25,1,.5,1);
+  --ease-swift:cubic-bezier(.2,.8,.2,1);
+}
+
+.appear{
+  animation-duration:var(--dur,1.05s);
+  animation-fill-mode:both;
+  animation-timing-function:var(--ease,var(--ease-expo));
+  animation-delay:var(--d,.08s);
+}
+.appear--scale{animation-name:mk-in-scale}
+.appear--soft{animation-name:mk-in-soft}
+.appear--rise{animation-name:mk-in-rise}
+.appear--pop{animation-name:mk-in-pop}
+.appear--btn{animation-name:mk-in-btn}
+.appear--side{animation-name:mk-in-side}
+.appear--blur{animation-name:mk-in-blur;--dur:1.2s}
+.appear--spin{animation-name:mk-in-spin;--dur:.9s}
+.appear--media{animation-name:mk-in-media;--dur:1.6s}
+.appear--wipe-x{animation-name:mk-in-wipe-x;--ease:var(--ease-wipe);--dur:.75s}
+.appear--wipe-c{animation-name:mk-in-wipe-c;--ease:var(--ease-wipe);--dur:.8s}
+.appear--fade{animation-name:mk-in-fade;--ease:var(--ease-settle);--dur:.6s}
+
+/* Masked line: wrapper clips, inner span rises. Padding keeps descenders/italics unclipped. */
+.mask-line{display:block;overflow:hidden;padding:.06em .15em .14em;margin:-.06em -.15em -.14em}
+.mask-line>.appear--mask{display:inline-block;animation-name:mk-in-mask}
+
+/* Keyframes use the individual transform properties (translate/scale/rotate) so they compose with
+   any transform the element already has (e.g. translateX(-50%) centring) instead of replacing it. */
+@keyframes mk-in-scale{from{opacity:0;scale:.84}}
+@keyframes mk-in-soft{from{opacity:0;translate:0 14px}}
+@keyframes mk-in-rise{from{opacity:0;translate:0 20px}}
+@keyframes mk-in-pop{0%{opacity:0;scale:.9}70%{opacity:1;scale:1.03}100%{scale:1}}
+@keyframes mk-in-btn{from{opacity:0;translate:0 18px;scale:.94}}
+@keyframes mk-in-side{from{opacity:0;translate:22px 0}}
+@keyframes mk-in-mask{from{opacity:0;translate:0 110%}}
+@keyframes mk-in-blur{from{opacity:.35;filter:blur(4px)}}
+@keyframes mk-in-spin{0%{scale:.2;rotate:-50deg}65%{scale:1.2;rotate:8deg}100%{scale:1;rotate:0deg}}
+@keyframes mk-in-media{from{opacity:0;scale:1.06;filter:blur(6px)}}
+@keyframes mk-in-wipe-x{from{clip-path:inset(0 100% 0 0)}}
+@keyframes mk-in-wipe-c{from{clip-path:inset(0 50% 0 50%)}}
+@keyframes mk-in-fade{from{opacity:0}}
+
+/* Finished: drop the animation. The element's own styles are the end state, so nothing else is forced
+   (forcing transform:none here would wipe transforms the element legitimately has). */
+.is-in{animation:none!important}
+
+/* Reveal-on-scroll: hidden ONLY when JS has opted in (html.mk-reveal), so content shows without JS. */
+.mk-reveal [data-reveal]:not(.is-revealed){opacity:0;translate:0 24px}
+.mk-reveal [data-reveal]{transition:opacity .9s var(--ease-expo),translate .9s var(--ease-expo);transition-delay:var(--d,0s)}
+
+/* WAAPI intro: initial states exist only while html.mk-intro is present (set in <head>). */
+.mk-intro [data-mk="mask"]>*{translate:0 105%}
+.mk-intro [data-mk="mask"]{overflow:hidden}
+.mk-intro [data-mk="wipe-x"]{clip-path:inset(0 100% 0 0)}
+.mk-intro [data-mk="wipe-c"]{clip-path:inset(0 50% 0 50%)}
+.mk-intro [data-mk="fade"]{opacity:0}
+.mk-intro [data-mk="draw"] path{stroke-dasharray:0 100000}
+
+/* Grain overlay */
+.mk-grain{position:fixed;inset:-50%;z-index:100;pointer-events:none;opacity:var(--grain,.08);mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .mk-reveal [data-reveal]{opacity:1;translate:none}
+}
+
+/* ==== TOKENS (reference 1440 × 900) ==== */
+:root{
+  --bg:#0b0d0e; --bg-2:#121619; --bg-3:#0e1114;
+  --ink:#e8ebe8; --ink-2:#c4c9c7; --muted:#8a9295; --dim:#737b7f; --faint:#5b6367; --num:rgba(232,235,232,.24);
+  --line:rgba(232,235,232,.09); --line-2:rgba(232,235,232,.18);
+  --flag:#f2b33d; --flag-soft:rgba(242,179,61,.15); --flag-row:rgba(242,179,61,.055);
+  --sans:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+
+  --h1:clamp(44px,6vw,112px); --lede:16.5px; --lede-max:470px; --nav:14px; --btn:15px; --btn-h:48px; --micro:11px;
+  --pad-x:48px; --pad-y:22px; --pad-b:44px; --col-gap:40px; --stage-x:50vw;
+  --code:15px; --lh:26px; --gutter:64px; --code-pad:20px; --comment-w:560px; --c-text:14.5px; --c-code:12.5px;
+  --split-y:34%; --before:12; --code-dim:.64;
+  --r:6px;
+}
+
+/* ---- base ---- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{color:var(--ink)}
+body{font-family:var(--sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;overflow-x:hidden}
+a{color:inherit;text-decoration:none} button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:3px;border-radius:4px}
+
+/* ---- layer stack: bg → media (desk-lamp falloff) → page (code stage, copy) → grain ---- */
+.media{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(70% 80% at 78% 38%,#11161a 0%,rgba(17,22,26,0) 70%),radial-gradient(60% 60% at 0% 100%,#090a0b 0%,rgba(9,10,11,0) 70%)}
+
+.page{position:relative;z-index:1;display:grid;grid-template-rows:auto minmax(0,1fr);min-height:100vh;min-height:100dvh}
+/* hero grid (desktop): left column holds PR meta (top) and headline + lede + actions (bottom); the stage is absolute on the right */
+.hero{grid-row:2;display:grid;grid-template-columns:var(--stage-x) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) auto auto;min-height:0}
+
+/* ---- header: logo | nav aligned to the code column | sign in ---- */
+.header{grid-row:1;position:relative;z-index:50;display:grid;grid-template-columns:calc(var(--stage-x) - var(--pad-x)) minmax(0,1fr) auto;
+  align-items:center;padding:var(--pad-y) var(--pad-x) 0;padding-top:max(var(--pad-y),env(safe-area-inset-top))}
+.logo{justify-self:start;display:inline-flex;align-items:center;gap:10px;height:40px;font-size:19px;font-weight:600;font-stretch:90%;letter-spacing:-.03em}
+.logo svg{width:22px;height:22px;flex:none;translate:0 -1px}   /* optical: the mark sits low next to the x-height */
+.nav{display:flex;align-items:center;gap:2px;padding-left:calc(var(--gutter) + var(--code-pad) - 10px)}
+.nav a{display:inline-flex;align-items:center;height:36px;padding:0 10px;font-size:var(--nav);letter-spacing:-.005em;color:var(--ink-2);
+  background:linear-gradient(currentColor,currentColor) 10px calc(100% - 7px)/0 1px no-repeat;
+  transition:color .25s var(--ease-swift),background-size .35s var(--ease-swift)}
+.nav a:hover{color:var(--ink);background-size:calc(100% - 20px) 1px}
+.nav .m-only{display:none}
+.signin{justify-self:end;display:inline-flex;align-items:center;height:36px;padding:0 14px;border:1px solid var(--line-2);border-radius:var(--r);
+  font-size:var(--nav);color:var(--ink);transition:border-color .25s var(--ease-swift),background-color .25s var(--ease-swift)}
+.signin:hover{border-color:rgba(232,235,232,.42);background:rgba(232,235,232,.05)}
+.burger{display:none}
+
+/* ---- the pull request this page is reviewing: corner copy with real information ---- */
+.pr{grid-area:1/1/2/2;padding:clamp(22px,5.2vh,56px) var(--col-gap) 0 var(--pad-x);font:400 var(--pr-m,12px)/1.5 var(--mono);color:var(--muted)}
+.pr .mask-line{width:max-content;max-width:100%}
+.pr-k{font-size:var(--micro);letter-spacing:.09em;text-transform:uppercase;color:var(--dim)}
+.pr-t{margin:6px 0 4px;font:500 var(--pr-t,15.5px)/1.3 var(--sans);letter-spacing:-.012em;color:var(--ink-2)}
+.pr-m{display:flex;flex-wrap:wrap;gap:4px 14px}
+.pr-m .add{color:var(--ink-2)}
+.pr-m .st{color:var(--ink-2)}
+.pr-m .st b{font-weight:500;color:var(--flag)}
+
+/* ---- copy: bottom-left, never over the code ---- */
+.title{grid-area:3/1/4/2;position:relative;z-index:3;min-width:0;padding:0 var(--col-gap) 0 var(--pad-x)}
+.lead{grid-area:4/1/5/2;position:relative;z-index:3;min-width:0;padding:0 var(--col-gap) var(--pad-b) var(--pad-x);
+  padding-bottom:max(var(--pad-b),env(safe-area-inset-bottom))}
+h1{font-size:var(--h1);font-weight:600;font-stretch:82%;letter-spacing:-.032em;line-height:.95;color:var(--ink)}
+h1 .mask-line>span{white-space:nowrap}
+.lede{max-width:var(--lede-max);margin-top:24px;font-size:var(--lede);line-height:1.56;letter-spacing:-.01em;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
+
+/* buttons: paper solid with a shine sweep + hairline ghost. Radius 6 (tech system). No glass, no chrome. */
+.btn{position:relative;isolation:isolate;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:10px;height:var(--btn-h);padding:0 20px;
+  border-radius:var(--r);font-size:var(--btn);font-weight:500;letter-spacing:-.012em;line-height:1;white-space:nowrap;
+  transition:background-color .3s var(--ease-swift),border-color .3s var(--ease-swift),color .3s var(--ease-swift)}
+.btn .lbl{padding-top:1px}
+.btn-solid{background:var(--ink);color:var(--bg);box-shadow:inset 0 -1px 0 rgba(0,0,0,.18)}
+.btn-solid::after{content:"";position:absolute;inset:0;z-index:-1;translate:-130% 0;transition:translate .65s var(--ease-swift);
+  background:linear-gradient(115deg,transparent 25%,rgba(255,255,255,.9) 50%,transparent 75%)}
+.btn-solid:hover{background:#f6f7f4}
+.btn-solid:hover::after{translate:130% 0}
+.btn svg{width:14px;height:14px;flex:none;transition:translate .3s var(--ease-swift)}
+.btn-solid:hover svg{translate:3px 0}
+.btn-ghost{color:var(--ink);border:1px solid var(--line-2);background:rgba(232,235,232,.02)}
+.btn-ghost:hover{border-color:rgba(232,235,232,.45);background:rgba(232,235,232,.06)}
+
+/* ---- the stage: the code file is the hero image ---- */
+.stage{position:absolute;top:0;bottom:0;left:var(--stage-x);right:0;z-index:1;overflow:hidden;
+  -webkit-mask-image:linear-gradient(180deg,transparent 0,transparent 6%,#000 21%,#000 68%,transparent 92%);
+  mask-image:linear-gradient(180deg,transparent 0,transparent 6%,#000 21%,#000 68%,transparent 92%)}
+/* the gutter rule: the page's margin line */
+.stage::before{content:"";position:absolute;top:0;bottom:0;left:calc(var(--gutter) - 1px);width:1px;background:var(--line-2);z-index:0}
+.code{position:absolute;left:0;right:0;top:calc(var(--split-y) - var(--before) * var(--lh));font:400 var(--code)/var(--lh) var(--mono);font-variant-ligatures:none}
+
+.ln{position:relative;display:grid;grid-template-columns:var(--gutter) minmax(0,1fr);height:var(--lh);white-space:pre;
+  opacity:calc(var(--code-dim) + var(--lit,0) * (1 - var(--code-dim)));transition:opacity .45s var(--ease-settle);
+  /* lines bleed off the right edge; the fade lives on the lines so the comment is never faded */
+  -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - var(--fade-r,150px)),transparent);mask-image:linear-gradient(90deg,#000 calc(100% - var(--fade-r,150px)),transparent)}
+.ln .n{padding-right:16px;text-align:right;color:var(--num);font-size:.86em;font-variant-numeric:tabular-nums}
+.ln .t{padding-left:var(--code-pad);color:rgba(232,235,232,.6)}
+.ln i{font-style:normal}
+.ln .k{color:rgba(232,235,232,.84)}
+.ln .f{color:#eef0ec}
+.ln .y{color:rgba(232,235,232,.74)}
+.ln .s{color:rgba(229,219,196,.82)}
+.ln .m{color:rgba(229,219,196,.82)}
+.ln .c{color:rgba(232,235,232,.42);font-style:italic}
+
+/* flagged line */
+.ln .n,.ln .t{position:relative}
+.ln.flag{--code-dim:1}
+.ln.flag::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,var(--flag-row),rgba(242,179,61,0) 85%);transform-origin:0 50%}
+.ln.flag .n{color:var(--flag);animation:none}
+.ln.flag .t{color:rgba(232,235,232,.8)}
+.ln.flag::after{content:"";position:absolute;left:calc(var(--gutter) - 1px);top:0;bottom:0;width:2px;background:var(--flag);z-index:1}
+.bug{border-radius:2px;
+  background:linear-gradient(var(--flag),var(--flag)) 0 100%/100% 1px no-repeat,linear-gradient(var(--flag-soft),var(--flag-soft)) 0 0/100% 100% no-repeat}
+
+/* thread row: the comment lives inside the code, between line 35 and 36 */
+.thread{position:relative;padding:10px var(--pad-x) 14px calc(var(--gutter) + var(--code-pad))}
+.thread::before{content:"";position:absolute;left:calc(var(--gutter) - 1px);top:0;width:calc(var(--code-pad) + 1px);height:31px;
+  border-left:2px solid var(--flag);border-bottom:1px solid var(--flag);border-bottom-left-radius:7px;z-index:1}
+.comment{position:relative;max-width:var(--comment-w);background:var(--bg-2);border:1px solid var(--line-2);border-radius:var(--r);
+  font:400 var(--c-text)/1.55 var(--sans);letter-spacing:-.004em;color:var(--ink-2);
+  box-shadow:0 1px 0 rgba(255,255,255,.03) inset,0 24px 48px -28px rgba(0,0,0,.9)}
+.c-head{display:flex;align-items:center;gap:9px;padding:10px 14px;border-bottom:1px solid var(--line);font-size:calc(var(--c-text) - 1.5px);line-height:1.2;white-space:nowrap}
+.c-av{display:grid;place-items:center;width:22px;height:22px;border-radius:5px;background:#1b2024;border:1px solid var(--line);flex:none}
+.c-av svg{width:15px;height:15px}
+.c-who{font-weight:600;color:var(--ink)}
+.c-where{min-width:0;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+.c-where code{font:400 .92em var(--mono);color:var(--ink-2)}
+.c-body code{white-space:nowrap}
+.c-when{margin-left:auto;font:400 11px var(--mono);letter-spacing:.04em;color:var(--dim)}
+.c-body{padding:12px 14px 14px}
+.c-body p+p,.c-body .sugg+p{margin-top:10px}
+.c-body code{font:400 .86em var(--mono);padding:1px 4px;border-radius:3px;background:rgba(232,235,232,.07);color:var(--ink)}
+.prefix{font:500 .88em var(--mono);color:var(--flag);margin-right:.3em}
+.sugg{margin-top:12px;border:1px solid var(--line);border-radius:5px;overflow:hidden;background:var(--bg-3)}
+.sugg-h{display:flex;justify-content:space-between;gap:12px;padding:7px 10px;border-bottom:1px solid var(--line);
+  font:400 calc(var(--c-code) - 2px)/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.dl{display:grid;grid-template-columns:20px minmax(0,1fr);padding:0 10px;font:400 var(--c-code)/1.85 var(--mono);white-space:pre;font-variant-ligatures:none}
+.dl .mk{color:var(--faint)}
+.dl.del{color:#6f777b}
+.dl.add{color:var(--ink);background:rgba(232,235,232,.05)}
+.dl.add .mk{color:var(--ink-2)}
+.dl mark{background:rgba(232,235,232,.16);color:inherit;border-radius:2px}
+
+/* caption: what the stage is (honest label) */
+.caption{position:absolute;right:var(--pad-x);bottom:calc(var(--pad-b) + 2px);z-index:3;font:400 var(--micro)/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+
+/* ==== custom entrances (same easing family as the kit; explicit end states so clip-path interpolates) ==== */
+.ln.appear{animation-name:sv-line;--dur:.85s;--d:calc(.18s + var(--i,0) * .028s)}
+.after .ln.appear{--d:calc(.5s + var(--i,0) * .028s)}
+@keyframes sv-line{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+/* the reading band: runs from the first line down to the flagged line, then hands over to the flag */
+.scan{position:absolute;left:0;right:0;top:0;height:var(--lh);pointer-events:none;opacity:0;z-index:2;
+  background:linear-gradient(90deg,transparent 0,transparent calc(var(--gutter) - 1px),rgba(232,235,232,.75) calc(var(--gutter) - 1px),rgba(232,235,232,.75) calc(var(--gutter) + 1px),rgba(232,235,232,.07) calc(var(--gutter) + 1px),transparent 75%);
+  animation:sv-scan .62s var(--ease-draw) .92s both}
+@keyframes sv-scan{0%{opacity:0;translate:0 0}12%{opacity:1}82%{opacity:1;translate:0 calc((var(--before) - 1) * var(--lh))}100%{opacity:0;translate:0 calc((var(--before) - 1) * var(--lh))}}
+.ln.flag::after{animation:sv-bar .5s var(--ease-expo) 1.42s both;transform-origin:50% 50%}
+@keyframes sv-bar{from{scale:1 0}}
+.ln.flag::before{animation:sv-row .7s var(--ease-settle) 1.42s both}
+@keyframes sv-row{from{scale:0 1}}
+.ln.flag .n{animation:sv-num .5s var(--ease-settle) 1.42s both}
+@keyframes sv-num{from{color:var(--num)}}
+.bug.appear{animation-name:sv-mark;--d:1.5s;--dur:.6s;--ease:var(--ease-wipe)}
+@keyframes sv-mark{from{background-size:0 1px,0 100%}}
+/* the split: everything after line 35 starts closed up against it, then slides down while the comment unfolds */
+.thread::before{animation:sv-conn .55s var(--ease-wipe) 1.58s both}
+@keyframes sv-conn{from{clip-path:inset(0 0 100% 0)}to{clip-path:inset(0 0 0 0)}}
+.after.appear{animation-name:sv-close;--d:1.6s;--dur:1s;--ease:var(--ease-wipe)}
+@keyframes sv-close{from{translate:0 calc(-1 * var(--split-h,236px))}}
+.comment.appear{animation-name:sv-unfold;--d:1.6s;--dur:1s;--ease:var(--ease-wipe)}
+@keyframes sv-unfold{from{clip-path:inset(0 0 100% 0 round 6px)}to{clip-path:inset(0 0 0 0 round 6px)}}
+
+/* ambient: a slow read wave through the gutter numbers (media layer only) */
+@keyframes sv-read{0%,100%{color:var(--num)}3%{color:rgba(232,235,232,.78)}10%{color:var(--num)}}
+.reading .ln:not(.flag) .n{animation:sv-read 7.5s linear calc(3.4s + var(--i,0) * .085s) infinite}
+
+/* ---- breakpoints: tokens only ---- */
+@media (min-width:1600px){:root{--lede:18px;--lede-max:520px;--nav:15px;--btn:16px;--btn-h:52px;--micro:12px;--pad-x:64px;--pad-b:56px;--col-gap:56px;
+  --code:16px;--lh:28px;--gutter:72px;--code-pad:22px;--comment-w:620px;--c-text:15.5px;--c-code:13.5px}}
+@media (min-width:1800px){:root{--lede:19.5px;--lede-max:580px;--btn-h:56px;--btn:17px;--nav:16px;--micro:12.5px;--pad-x:80px;--pad-b:64px;--col-gap:64px;
+  --code:18px;--lh:32px;--gutter:84px;--code-pad:26px;--comment-w:720px;--c-text:17.5px;--c-code:15px;--pr-t:18px;--pr-m:13.5px;--fade-r:220px}}
+@media (min-width:901px) and (max-width:1279px){:root{--h1:clamp(40px,6vw,76px);--lede:15px;--lede-max:410px;--nav:13px;--btn:14px;--btn-h:44px;
+  --pad-x:28px;--pad-b:32px;--col-gap:28px;--code:13px;--lh:22px;--gutter:50px;--code-pad:16px;--comment-w:450px;--c-text:13.5px;--c-code:11.5px}
+  .c-when{display:none}}
+@media (min-width:901px) and (max-height:820px){:root{--split-y:31%;--pad-b:34px;--lede:15.5px}
+  .lede{margin-top:20px}.actions{margin-top:24px}}
+@media (min-width:1280px) and (max-height:820px){:root{--code:14px;--lh:24px;--c-text:14px;--c-code:12px}}
+@media (min-width:901px) and (max-height:720px){:root{--h1:clamp(40px,5.2vw,68px);--lede:14.5px;--btn-h:44px;--btn:14px;--pad-y:16px;--pad-b:28px;--split-y:30%;
+  --code:13px;--lh:22px;--c-text:13.5px;--c-code:11.5px}
+  .c-body{padding:10px 13px 12px}.sugg{margin-top:10px}.dl{line-height:1.75}.pr-t{font-size:14.5px}}
+@media (min-width:901px) and (max-height:620px){.pr{display:none}:root{--h1:40px;--split-y:24%}}
+
+/* one-screen lock on desktop only */
+@media (min-width:901px){html,body{height:100%;overflow:hidden}.page{height:100vh;height:100dvh;overflow:hidden}}
+
+/* desktop: the reading ruler follows the pointer */
+@media (hover:hover) and (pointer:fine){.stage{cursor:default}}
+
+@media (max-width:900px){
+  :root{--h1:clamp(34px,9.5vw,64px);--lede:16px;--lede-max:560px;--pad-x:16px;--pad-y:12px;--pad-b:28px;--btn:15px;--btn-h:50px;
+    --code:12px;--lh:20px;--gutter:36px;--code-pad:12px;--c-text:14px;--c-code:10.75px;--code-dim:.8;--show-before:3;--show-after:3;--fade-r:72px}
+  .page,.hero{display:flex;flex-direction:column}
+  .header{grid-template-columns:1fr auto;gap:8px;padding-bottom:6px}
+  .signin{display:none}
+  .burger{display:grid;place-content:center;gap:5px;width:44px;height:44px;border-radius:var(--r);border:1px solid var(--line-2);background:rgba(11,13,14,.6);position:relative;z-index:80}
+  .burger i{display:block;width:16px;height:1.5px;background:var(--ink);border-radius:1px;transition:transform .25s var(--ease-swift),opacity .2s}
+  .menu-open .burger i:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+  .menu-open .burger i:nth-child(2){opacity:0}
+  .menu-open .burger i:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+  /* full-screen menu; justify/align-self:stretch undo the desktop grid placement */
+  .nav{position:fixed;inset:0;z-index:45;justify-self:stretch;align-self:stretch;flex-direction:column;justify-content:center;gap:4px;
+    padding:max(96px,calc(env(safe-area-inset-top) + 88px)) 22px max(32px,env(safe-area-inset-bottom));
+    background:rgba(11,13,14,.86);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+    opacity:0;visibility:hidden;transition:opacity .28s var(--ease-settle),visibility .28s}
+  .menu-open .nav{opacity:1;visibility:visible}
+  .nav a{width:100%;height:58px;justify-content:center;padding:0;font-size:26px;font-weight:600;font-stretch:82%;letter-spacing:-.025em;color:var(--ink);background:none;border-radius:8px}
+  .nav .m-only{font-size:17px;font-weight:500;font-stretch:100%;letter-spacing:-.01em;height:52px}
+  .nav a:hover{background:rgba(232,235,232,.06)}
+  .nav .m-only{display:inline-flex;margin-top:14px;border:1px solid var(--line-2)}
+  .logo{position:relative;z-index:80}
+  body.menu-open{overflow:hidden}
+  html{overflow-x:clip}
+
+  /* phone order: headline → the PR and its review (the proof) → lede + actions */
+  .title{order:1;padding:20px var(--pad-x) 0}
+  .pr{order:2;padding:24px var(--pad-x) 4px}
+  .pr-t{font-size:15px}
+  .stage{order:3;position:relative;inset:auto;margin-top:2px;
+    -webkit-mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 76%,transparent 100%);
+    mask-image:linear-gradient(180deg,transparent 0,#000 16%,#000 76%,transparent 100%)}
+  .code{position:relative;top:auto;margin-top:calc(-1 * (var(--before) - var(--show-before)) * var(--lh))}
+  .ln .n{padding-right:9px}
+  .after{max-height:calc(var(--show-after) * var(--lh));overflow:hidden}
+  .thread{padding:10px var(--pad-x) 12px calc(var(--gutter) + 8px)}
+  .thread::before{width:9px;height:30px}
+  .c-head{padding:10px 12px}
+  .c-body{padding:11px 12px 13px}
+  .sugg{margin:12px -12px 0;border-left:0;border-right:0;border-radius:0}
+  .dl{grid-template-columns:15px minmax(0,1fr);padding:0 11px}
+  .dl>span:last-child{white-space:pre-wrap;overflow-wrap:anywhere}   /* soft-wrap like a narrow diff view instead of clipping */
+  h1 .mask-line>span{white-space:normal}
+  .c-when{display:none}
+  .lead{order:4;padding:14px var(--pad-x) 0}
+  .lede{margin-top:0}
+  .actions{margin-top:26px}
+  .caption{order:5;position:static;padding:26px var(--pad-x) 0;padding-bottom:max(28px,env(safe-area-inset-bottom))}
+}
+@media (max-width:560px){
+  .actions{flex-direction:column}
+  .actions .btn{width:100%}
+  .actions .appear--side{animation-name:mk-in-btn}   /* stacked full-width: rise instead of sliding in from the side */
+}
+@media (max-width:900px) and (min-width:561px){:root{--code:13px;--lh:22px;--gutter:48px;--code-pad:16px}.comment{max-width:560px}}
+@media (prefers-reduced-motion:reduce){.scan{display:none}.ln{transition:none}}
+</style>
+</head>
+<body>
+<div class="mk-grain" aria-hidden="true" style="--grain:.06"></div>
+<!-- MEDIA: no image or video. The hero image is the code file in .stage; this layer is only the lamp falloff. -->
+<div class="media" aria-hidden="true"></div>
+
+<div class="page">
+  <header class="header">
+    <a class="logo appear appear--scale" href="#top" style="--d:.08s" aria-label="Sieve home">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="6.2" y="3.5" width="1.4" height="17" fill="currentColor" opacity=".45"/>
+        <rect x="10" y="5.4" width="9.5" height="2.2" rx="1.1" fill="currentColor"/>
+        <rect x="10" y="10.9" width="6" height="2.2" rx="1.1" fill="currentColor"/>
+        <rect x="10" y="16.4" width="8" height="2.2" rx="1.1" fill="currentColor"/>
+        <rect x="5.1" y="9.6" width="3.6" height="4.8" rx="1" fill="#f2b33d"/>
+      </svg>Sieve
+    </a>
+    <nav class="nav" id="site-nav" aria-label="Primary">
+      <a class="appear appear--scale" href="#how" style="--d:.16s">How it reviews</a>
+      <a class="appear appear--soft" href="#threads" style="--d:.24s">Sample threads</a>
+      <a class="appear appear--scale" href="#pricing" style="--d:.32s">Pricing</a>
+      <a class="appear appear--soft" href="#docs" style="--d:.40s">Docs</a>
+      <a class="m-only" href="#signin">Sign in</a>
+    </nav>
+    <a class="signin appear appear--scale" href="#signin" style="--d:.36s">Sign in</a>
+    <button class="burger appear appear--scale" style="--d:.30s" aria-controls="site-nav" aria-expanded="false" aria-label="Open menu"><i></i><i></i><i></i></button>
+  </header>
+
+  <main class="hero" id="top">
+    <h1 class="title">
+      <span class="mask-line"><span class="appear appear--mask" style="--d:.42s">Every pull request,</span></span>
+      <span class="mask-line"><span class="appear appear--mask" style="--d:.54s">read like it’ll page</span></span>
+      <span class="mask-line"><span class="appear appear--mask" style="--d:.66s">you at 3&nbsp;a.m.</span></span>
+    </h1>
+    <div class="lead">
+      <p class="lede appear appear--soft" style="--d:.84s;--dur:1.25s">Sieve reads each pull request as it opens and comments where your most careful engineer would: a cache key with no tenant in it, a migration that locks a hot table. If the diff is fine, it approves and stays quiet.</p>
+      <div class="actions">
+        <a class="btn btn-solid appear appear--btn" href="#connect" style="--d:.98s"><span class="lbl">Connect a repository</span>
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.5 8h10M9 4.5 12.5 8 9 11.5"/></svg></a>
+        <a class="btn btn-ghost appear appear--side" href="#example" style="--d:1.10s"><span class="lbl">Open an example PR</span></a>
+      </div>
+    </div>
+
+    <!-- The pull request on the stage. Illustrative: repository, number and counts are not real data. -->
+    <div class="pr">
+      <p class="pr-k"><span class="mask-line"><span class="appear appear--mask" style="--d:.30s">Pull request #2291 · ledger-api</span></span></p>
+      <p class="pr-t"><span class="mask-line"><span class="appear appear--mask" style="--d:.38s">Cache monthly report totals</span></span></p>
+      <p class="pr-m appear appear--soft" style="--d:.48s"><span>6 files</span><span><span class="add">+214</span> −37</span><span class="st">Sieve: <b>changes requested</b></span></p>
+    </div>
+
+    <!-- STAGE: the hero image. Code lines are decorative (aria-hidden); the review comment is real content. -->
+    <div class="stage" id="stage">
+      <div class="code" id="code">
+        <span class="scan" aria-hidden="true"></span>
+        <div class="before" aria-hidden="true">
+          <div class="ln appear" style="--i:0"><span class="n">24</span><span class="t"><i class="k">export async function</i> <i class="f">invoiceTotal</i>(tenantId: <i class="y">string</i>, month: <i class="y">string</i>) {</span></div>
+          <div class="ln appear" style="--i:1"><span class="n">25</span><span class="t">  <i class="k">const</i> rows = <i class="k">await</i> db.invoice.<i class="f">findMany</i>({ where: { tenantId, month } })</span></div>
+          <div class="ln appear" style="--i:2"><span class="n">26</span><span class="t">  <i class="k">return</i> rows.<i class="f">reduce</i>((sum, r) =&gt; sum + r.amountCents, <i class="m">0</i>)</span></div>
+          <div class="ln appear" style="--i:3"><span class="n">27</span><span class="t">}</span></div>
+          <div class="ln appear" style="--i:4"><span class="n">28</span><span class="t"></span></div>
+          <div class="ln appear" style="--i:5"><span class="n">29</span><span class="t"><i class="c">/**</i></span></div>
+          <div class="ln appear" style="--i:6"><span class="n">30</span><span class="t"><i class="c"> * Monthly totals for the reports page.</i></span></div>
+          <div class="ln appear" style="--i:7"><span class="n">31</span><span class="t"><i class="c"> * Cached for an hour, cleared by onInvoiceWrite.</i></span></div>
+          <div class="ln appear" style="--i:8"><span class="n">32</span><span class="t"><i class="c"> */</i></span></div>
+          <div class="ln appear" style="--i:9"><span class="n">33</span><span class="t"><i class="k">export async function</i> <i class="f">getMonthlySummary</i>(req: <i class="y">Request</i>) {</span></div>
+          <div class="ln appear" style="--i:10"><span class="n">34</span><span class="t">  <i class="k">const</i> { tenantId, month } = req.params</span></div>
+          <div class="ln flag appear" style="--i:11"><span class="n">35</span><span class="t">  <i class="k">const</i> key = <span class="bug appear"><i class="s">`summary:${month}`</i></span></span></div>
+        </div>
+
+        <div class="thread" id="thread">
+          <article class="comment appear" aria-label="Example review comment from Sieve on line 35 of src/reports/summary.ts">
+            <header class="c-head appear appear--fade" style="--d:1.9s">
+              <span class="c-av" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6.2" y="3.5" width="1.4" height="17" fill="#e8ebe8" opacity=".45"/><rect x="10" y="5.4" width="9.5" height="2.2" rx="1.1" fill="#e8ebe8"/><rect x="10" y="10.9" width="6" height="2.2" rx="1.1" fill="#e8ebe8"/><rect x="10" y="16.4" width="8" height="2.2" rx="1.1" fill="#e8ebe8"/><rect x="5.1" y="9.6" width="3.6" height="4.8" rx="1" fill="#f2b33d"/></svg></span>
+              <span class="c-who">Sieve</span>
+              <span class="c-where">on <code>summary.ts</code>, line 35</span>
+              <span class="c-when">just now</span>
+            </header>
+            <div class="c-body">
+              <p class="appear appear--soft" style="--d:1.98s"><span class="prefix">blocking:</span>No tenant in this key. Whoever opens March first fills <code>summary:2026-03</code>, and every other tenant is served those totals for the next hour.</p>
+              <div class="sugg appear appear--soft" style="--d:2.08s">
+                <div class="sugg-h"><span>Suggested change</span><span>Line 35</span></div>
+                <div class="dl del appear appear--wipe-x" style="--d:2.2s"><span class="mk" aria-label="removed">−</span><span>const key = `summary:${month}`</span></div>
+                <div class="dl add appear appear--wipe-x" style="--d:2.3s"><span class="mk" aria-label="added">+</span><span>const key = `summary:<mark>${tenantId}:</mark>${month}`</span></div>
+              </div>
+              <p class="appear appear--soft" style="--d:2.4s"><code>onInvoiceWrite</code> clears the same key in <code>hooks.ts:52</code>. Change it there too.</p>
+            </div>
+          </article>
+        </div>
+
+        <div class="after appear" id="after" aria-hidden="true">
+          <div class="ln appear" style="--i:0"><span class="n">36</span><span class="t"></span></div>
+          <div class="ln appear" style="--i:1"><span class="n">37</span><span class="t">  <i class="k">const</i> cached = <i class="k">await</i> redis.<i class="f">get</i>(key)</span></div>
+          <div class="ln appear" style="--i:2"><span class="n">38</span><span class="t">  <i class="k">if</i> (cached) <i class="k">return</i> JSON.<i class="f">parse</i>(cached)</span></div>
+          <div class="ln appear" style="--i:3"><span class="n">39</span><span class="t"></span></div>
+          <div class="ln appear" style="--i:4"><span class="n">40</span><span class="t">  <i class="k">const</i> rows = <i class="k">await</i> db.invoice.<i class="f">findMany</i>({</span></div>
+          <div class="ln appear" style="--i:5"><span class="n">41</span><span class="t">    where: { tenantId, month },</span></div>
+          <div class="ln appear" style="--i:6"><span class="n">42</span><span class="t">  })</span></div>
+          <div class="ln appear" style="--i:7"><span class="n">43</span><span class="t">  <i class="k">const</i> summary = <i class="f">summarize</i>(rows)</span></div>
+          <div class="ln appear" style="--i:8"><span class="n">44</span><span class="t">  <i class="k">await</i> redis.<i class="f">set</i>(key, JSON.<i class="f">stringify</i>(summary), <i class="s">'EX'</i>, ONE_HOUR)</span></div>
+          <div class="ln appear" style="--i:9"><span class="n">45</span><span class="t">  <i class="k">return</i> summary</span></div>
+          <div class="ln appear" style="--i:10"><span class="n">46</span><span class="t">}</span></div>
+          <div class="ln appear" style="--i:11"><span class="n">47</span><span class="t"></span></div>
+          <div class="ln appear" style="--i:12"><span class="n">48</span><span class="t"><i class="k">export async function</i> <i class="f">getYearlySummary</i>(req: <i class="y">Request</i>) {</span></div>
+          <div class="ln appear" style="--i:13"><span class="n">49</span><span class="t">  <i class="k">const</i> { tenantId, year } = req.params</span></div>
+          <div class="ln appear" style="--i:14"><span class="n">50</span><span class="t">  <i class="k">const</i> months = <i class="f">monthsOf</i>(year)</span></div>
+        </div>
+      </div>
+    </div>
+
+    <p class="caption appear appear--fade" style="--d:2.6s">Example review · illustrative code</p>
+  </main>
+</div>
+
+<script>
+/* ==== motion-kit.js (inlined) ==== */
+/* ==========================================================================
+   motion-kit.js: small, dependency-free helpers for choreographed motion.
+   Exposes window.MK. Every helper respects prefers-reduced-motion and leaves the page fully
+   visible if anything fails.
+
+   Optional head snippet for WAAPI intros: hides [data-mk] targets before first paint, with a
+   4 s failsafe. Put it in its own script tag inside <head>:
+     (function(r){try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&typeof r.animate==="function"){r.classList.add("mk-intro");window.__mkFailsafe=setTimeout(function(){r.classList.remove("mk-intro")},4000)}}catch(e){}})(document.documentElement);
+   ========================================================================== */
+(function (w, d) {
+  "use strict";
+  var reduced = w.matchMedia && w.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var EASE = {
+    expo: "cubic-bezier(.16,1,.3,1)", draw: "cubic-bezier(.62,.04,.22,1)",
+    wipe: "cubic-bezier(.77,0,.18,1)", settle: "cubic-bezier(.25,1,.5,1)"
+  };
+  function $$(s, root) { return typeof s === "string" ? Array.prototype.slice.call((root || d).querySelectorAll(s)) : (s.length != null ? Array.prototype.slice.call(s) : [s]); }
+
+  /* 1. CSS entrances: mark finished elements, force-finish if animations never run. */
+  function appear(root) {
+    var els = $$(".appear", root);
+    els.forEach(function (el) {
+      el.addEventListener("animationend", function (e) { if (e.target === el) el.classList.add("is-in"); });
+    });
+    var done = function () { els.forEach(function (el) { el.classList.add("is-in"); }); };
+    if (reduced) return done();
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      var running = d.getAnimations ? d.getAnimations().length : 0;
+      if (!running) done();
+    }); });
+    // Belt and braces: whatever happens, everything is in after 4 s.
+    setTimeout(done, 4000);
+  }
+
+  /* 2. WAAPI intro orchestration.
+     MK.intro(function (add) { add(el, keyframes, {duration, delay, easing}); … }, {images: [img]})
+     Waits for fonts + image decode (hard start at 1200 ms), plays once, then removes html.mk-intro
+     and cancels every animation in the same frame so static CSS is the final state. */
+  function intro(build, opts) {
+    opts = opts || {};
+    var root = d.documentElement;
+    if (reduced || typeof root.animate !== "function") { root.classList.remove("mk-intro"); return; }
+    var anims = [], started = false;
+    function add(el, kf, o) { if (!el) return null; o = o || {}; o.fill = "both"; if (!o.easing) o.easing = EASE.expo; var a = el.animate(kf, o); anims.push(a); return a; }
+    function play() {
+      if (started) return; started = true;
+      requestAnimationFrame(function () {
+        try { build(add, EASE); } catch (err) { console.error(err); }
+        clearTimeout(w.__mkFailsafe);
+        root.classList.remove("mk-intro"); // fill:both now holds the from-states
+        Promise.all(anims.map(function (a) { return a.finished; })).then(function () {
+          anims.forEach(function (a) { a.cancel(); }); anims.length = 0;
+        }, function () {});
+      });
+    }
+    var waits = [d.fonts ? d.fonts.ready : 0];
+    (opts.images || []).forEach(function (img) { if (img && img.decode) waits.push(img.decode().catch(function () {})); });
+    Promise.all(waits).then(play, play);
+    setTimeout(play, opts.hardStart || 1200);
+  }
+
+  /* 3. Masked lines: each [data-mk="mask"] wrapper's first child rises from 105%. */
+  function maskLines(add, sel, o) {
+    o = o || {};
+    $$(sel).forEach(function (wrap, i) {
+      var inner = wrap.firstElementChild || wrap;
+      add(inner, [{ translate: "0 105%" }, { translate: "0 0" }],
+        { duration: o.duration || 800, delay: (o.start || 0) + i * (o.step || 70), easing: EASE.expo });
+    });
+  }
+
+  /* 4. Letters: split a word into spans with optional per-letter kerning (in em), rise each. */
+  function letters(el, o) {
+    o = o || {};
+    var text = el.textContent; var kern = o.kerning || [];
+    el.setAttribute("aria-label", text.trim());
+    el.textContent = "";
+    var spans = [];
+    Array.prototype.forEach.call(text, function (ch, i) {
+      var s = d.createElement("span");
+      s.setAttribute("aria-hidden", "true");
+      s.style.display = "inline-block";
+      if (ch === " ") s.innerHTML = "&nbsp;"; else s.textContent = ch;
+      if (kern[i]) s.style.marginLeft = kern[i] + "em";
+      el.appendChild(s); spans.push(s);
+    });
+    return spans;
+  }
+  function riseLetters(add, spans, o) {
+    o = o || {};
+    spans.forEach(function (s, i) {
+      add(s, [{ translate: "0 105%" }, { translate: "0 0" }],
+        { duration: o.duration || 1000, delay: (o.start || 200) + i * (o.step || 38), easing: EASE.expo });
+    });
+  }
+
+  /* 5. Draw SVG strokes outward from their midpoint. */
+  function draw(add, paths, o) {
+    o = o || {};
+    $$(paths).forEach(function (p, i) {
+      var L = p.getTotalLength();
+      var from = o.fromMiddle === false
+        ? { strokeDasharray: "0px " + L + "px", strokeDashoffset: "0px" }
+        : { strokeDasharray: "0px " + L + "px", strokeDashoffset: (-L / 2) + "px" };
+      add(p, [from, { strokeDasharray: L + "px " + L + "px", strokeDashoffset: "0px" }],
+        { duration: o.duration || 1250, delay: (o.delays && o.delays[i] != null) ? o.delays[i] : (o.start || 100) + i * (o.step || 60), easing: EASE.draw });
+    });
+  }
+
+  /* 6. Clip-path wipes. from: "left" | "center" | "bottom". */
+  function wipe(add, el, o) {
+    o = o || {};
+    var start = { left: "inset(0 100% 0 0)", center: "inset(0 50% 0 50%)", bottom: "inset(100% 0 0 0)" }[o.from || "left"];
+    $$(el).forEach(function (e, i) {
+      add(e, [{ clipPath: start }, { clipPath: "inset(0 0% 0 0%)" }],
+        { duration: o.duration || 750, delay: (o.delay || 0) + i * (o.step || 90), easing: EASE.wipe });
+    });
+  }
+
+  /* 7. Magnet: element drifts toward the cursor inside a padding zone (fine pointers only). */
+  function magnet(el, o) {
+    o = o || {};
+    if (reduced || !w.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    var pad = o.padding || 120, strength = o.strength || 4;
+    el.style.willChange = "transform";
+    w.addEventListener("mousemove", function (e) {
+      var r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var inside = Math.abs(e.clientX - cx) < r.width / 2 + pad && Math.abs(e.clientY - cy) < r.height / 2 + pad;
+      el.style.transition = inside ? "transform .3s ease-out" : "transform .6s ease-in-out";
+      el.style.transform = inside ? "translate3d(" + (e.clientX - cx) / strength + "px," + (e.clientY - cy) / strength + "px,0)" : "translate3d(0,0,0)";
+    }, { passive: true });
+  }
+
+  /* 8. Reveal on scroll (opt-in hiding: CSS hides [data-reveal] only under html.mk-reveal). */
+  function reveal(o) {
+    o = o || {};
+    var els = $$("[data-reveal]");
+    if (reduced || !("IntersectionObserver" in w) || !els.length) return;
+    d.documentElement.classList.add("mk-reveal");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("is-revealed"); io.unobserve(en.target); } });
+    }, { rootMargin: o.rootMargin || "0px 0px -10% 0px", threshold: 0 });
+    els.forEach(function (el) { io.observe(el); });
+  }
+
+  /* 9. Opposing rows that move with scroll. rows: [{el, dir: 1|-1}] */
+  function scrollRows(section, rows, o) {
+    o = o || {};
+    if (reduced) return;
+    var factor = o.factor || 0.3, offset = o.offset || 200, ticking = false;
+    function update() {
+      ticking = false;
+      var top = section.getBoundingClientRect().top + w.scrollY;
+      var v = (w.scrollY - top + w.innerHeight) * factor;
+      rows.forEach(function (r) { r.el.style.transform = "translate3d(" + (r.dir > 0 ? v - offset : -(v - offset)) + "px,0,0)"; });
+    }
+    rows.forEach(function (r) { r.el.style.willChange = "transform"; });
+    w.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
+  /* 10. Character scroll reveal: opacity .2 → 1 across ['start 0.8', 'end 0.2']. */
+  function charReveal(el) {
+    var text = el.textContent;
+    el.setAttribute("aria-label", text.trim());
+    el.textContent = "";
+    var chars = Array.prototype.map.call(text, function (ch) {
+      var s = d.createElement("span"); s.setAttribute("aria-hidden", "true"); s.textContent = ch; el.appendChild(s); return s;
+    });
+    if (reduced) return;
+    var n = chars.length, ticking = false;
+    function update() {
+      ticking = false;
+      var r = el.getBoundingClientRect(), vh = w.innerHeight;
+      var start = vh * 0.8, end = vh * 0.2;              // element top at 80% → element bottom at 20%
+      var p = (start - r.top) / ((start - end) + r.height);
+      p = Math.max(0, Math.min(1, p));
+      chars.forEach(function (c, i) { var t = Math.max(0, Math.min(1, p * n - i)); c.style.opacity = (0.2 + 0.8 * t).toFixed(3); });
+    }
+    w.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
+  /* 11. Mobile menu: body.menu-open toggle with aria, Escape, link click and resize close. */
+  function menu(burger, nav, o) {
+    o = o || {};
+    var bp = o.breakpoint || 901;
+    function set(open) {
+      d.body.classList.toggle("menu-open", open);
+      burger.setAttribute("aria-expanded", String(open));
+      burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+    burger.addEventListener("click", function () { set(!d.body.classList.contains("menu-open")); });
+    $$("a", nav).forEach(function (a) { a.addEventListener("click", function () { set(false); }); });
+    w.addEventListener("keydown", function (e) { if (e.key === "Escape") set(false); });
+    var mq = w.matchMedia("(min-width: " + bp + "px)");
+    (mq.addEventListener ? mq.addEventListener.bind(mq, "change") : mq.addListener.bind(mq))(function (m) { if (m.matches) set(false); });
+    return set;
+  }
+
+  w.MK = { reduced: reduced, EASE: EASE, appear: appear, intro: intro, maskLines: maskLines, letters: letters,
+    riseLetters: riseLetters, draw: draw, wipe: wipe, magnet: magnet, reveal: reveal, scrollRows: scrollRows,
+    charReveal: charReveal, menu: menu };
+})(window, document);
+</script>
+<script>
+(function () {
+  var d = document, w = window;
+  var thread = d.getElementById("thread"), after = d.getElementById("after"), stage = d.getElementById("stage");
+
+  /* 1. Measure the comment so the closed-up lines start exactly against line 35. */
+  function measure() { if (thread && after) after.style.setProperty("--split-h", thread.offsetHeight + "px"); }
+  measure();
+  if (d.fonts && d.fonts.ready) d.fonts.ready.then(measure);
+  w.addEventListener("resize", measure, { passive: true });
+
+  /* 2. Entrances, failsafe and mobile menu from the kit. */
+  MK.appear();
+  MK.menu(d.querySelector(".burger"), d.getElementById("site-nav"));
+
+  /* 3. Ambient gutter read-wave: number each line in reading order, then switch it on. */
+  var lines = Array.prototype.slice.call(d.querySelectorAll(".code .ln"));
+  lines.forEach(function (ln, i) { var n = ln.querySelector(".n"); if (n) n.style.setProperty("--i", i); });
+  if (!MK.reduced) d.documentElement.classList.add("reading");
+
+  /* 4. Reading ruler (fine pointers only): lines near the pointer come up to full strength. */
+  if (MK.reduced || !w.matchMedia("(hover: hover) and (pointer: fine)").matches || !stage) return;
+  var raf = 0, py = null;
+  function paint() {
+    raf = 0;
+    lines.forEach(function (ln) {
+      if (py === null) { ln.style.removeProperty("--lit"); return; }
+      var r = ln.getBoundingClientRect(), dist = Math.abs(py - (r.top + r.height / 2)) / r.height;
+      var lit = Math.max(0, 1 - dist / 2.6);
+      if (lit > 0) ln.style.setProperty("--lit", lit.toFixed(3)); else ln.style.removeProperty("--lit");
+    });
+  }
+  stage.addEventListener("pointermove", function (e) { py = e.clientY; if (!raf) raf = requestAnimationFrame(paint); }, { passive: true });
+  stage.addEventListener("pointerleave", function () { py = null; if (!raf) raf = requestAnimationFrame(paint); }, { passive: true });
+})();
+</script>
+</body>
+</html>

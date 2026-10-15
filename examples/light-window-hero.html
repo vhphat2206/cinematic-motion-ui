@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Lặng — ngồi yên mười phút, mỗi sáng</title>
+<meta name="description" content="Lặng đếm giúp bạn mười phút ngồi yên mỗi sáng. Không thông báo, không streak.">
+<meta name="theme-color" content="#ded8cd">
+<!--
+  Archetype A · cinematic full-bleed, light. The "photograph" is a wall: morning sun through a
+  two-casement window lands on lime plaster, with the soft shadow of a bamboo sprig inside it.
+  Type   : Newsreader 300 (headline, wordmark) · Hanken Grotesk 400/500 (everything else). Both ship a Vietnamese subset.
+  Media  : drawn in CSS/SVG (no files): plaster tile from feTurbulence + feDiffuseLighting, a sheared
+           light patch with variable penumbra, two blurred leaf layers that sway on their own periods.
+  Signature: the light arrives on the wall like eyes adjusting after waking; then the patch slides,
+           in real time, for exactly ten minutes (600 s), as far as the sun would move it.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=Newsreader:opsz,wght@6..72,300..400&display=swap" rel="stylesheet">
+<style>
+/* ---- anti-flash: background first ---- */
+html,body{background:#ded8cd}
+
+/* ==== motion-kit.css (inlined) ==== */
+/* ==========================================================================
+   motion-kit.css: entrance vocabulary with a visible resting state.
+   Usage: <h1 class="appear appear--mask" style="--d:.42s">…</h1>
+   Elements are fully visible in their normal styles; the hidden state exists only in each
+   keyframe's `from`, applied during the delay by fill-mode `both`. Pair with motion-kit.js
+   (MK.appear) for the `.is-in` cleanup and the failsafe.
+   ========================================================================== */
+
+:root{
+  --ease-expo:cubic-bezier(.16,1,.3,1);
+  --ease-draw:cubic-bezier(.62,.04,.22,1);
+  --ease-wipe:cubic-bezier(.77,0,.18,1);
+  --ease-settle:cubic-bezier(.25,1,.5,1);
+  --ease-swift:cubic-bezier(.2,.8,.2,1);
+}
+
+.appear{
+  animation-duration:var(--dur,1.05s);
+  animation-fill-mode:both;
+  animation-timing-function:var(--ease,var(--ease-expo));
+  animation-delay:var(--d,.08s);
+}
+.appear--scale{animation-name:mk-in-scale}
+.appear--soft{animation-name:mk-in-soft}
+.appear--rise{animation-name:mk-in-rise}
+.appear--pop{animation-name:mk-in-pop}
+.appear--btn{animation-name:mk-in-btn}
+.appear--side{animation-name:mk-in-side}
+.appear--blur{animation-name:mk-in-blur;--dur:1.2s}
+.appear--spin{animation-name:mk-in-spin;--dur:.9s}
+.appear--media{animation-name:mk-in-media;--dur:1.6s}
+.appear--wipe-x{animation-name:mk-in-wipe-x;--ease:var(--ease-wipe);--dur:.75s}
+.appear--wipe-c{animation-name:mk-in-wipe-c;--ease:var(--ease-wipe);--dur:.8s}
+.appear--fade{animation-name:mk-in-fade;--ease:var(--ease-settle);--dur:.6s}
+
+/* Masked line: wrapper clips, inner span rises. Padding keeps descenders/italics unclipped. */
+.mask-line{display:block;overflow:hidden;padding:.06em .15em .14em;margin:-.06em -.15em -.14em}
+.mask-line>.appear--mask{display:inline-block;animation-name:mk-in-mask}
+
+/* Keyframes use the individual transform properties (translate/scale/rotate) so they compose with
+   any transform the element already has (e.g. translateX(-50%) centring) instead of replacing it. */
+@keyframes mk-in-scale{from{opacity:0;scale:.84}}
+@keyframes mk-in-soft{from{opacity:0;translate:0 14px}}
+@keyframes mk-in-rise{from{opacity:0;translate:0 20px}}
+@keyframes mk-in-pop{0%{opacity:0;scale:.9}70%{opacity:1;scale:1.03}100%{scale:1}}
+@keyframes mk-in-btn{from{opacity:0;translate:0 18px;scale:.94}}
+@keyframes mk-in-side{from{opacity:0;translate:22px 0}}
+@keyframes mk-in-mask{from{opacity:0;translate:0 110%}}
+@keyframes mk-in-blur{from{opacity:.35;filter:blur(4px)}}
+@keyframes mk-in-spin{0%{scale:.2;rotate:-50deg}65%{scale:1.2;rotate:8deg}100%{scale:1;rotate:0deg}}
+@keyframes mk-in-media{from{opacity:0;scale:1.06;filter:blur(6px)}}
+@keyframes mk-in-wipe-x{from{clip-path:inset(0 100% 0 0)}}
+@keyframes mk-in-wipe-c{from{clip-path:inset(0 50% 0 50%)}}
+@keyframes mk-in-fade{from{opacity:0}}
+
+/* Finished: drop the animation. The element's own styles are the end state, so nothing else is forced
+   (forcing transform:none here would wipe transforms the element legitimately has). */
+.is-in{animation:none!important}
+
+/* Reveal-on-scroll: hidden ONLY when JS has opted in (html.mk-reveal), so content shows without JS. */
+.mk-reveal [data-reveal]:not(.is-revealed){opacity:0;translate:0 24px}
+.mk-reveal [data-reveal]{transition:opacity .9s var(--ease-expo),translate .9s var(--ease-expo);transition-delay:var(--d,0s)}
+
+/* WAAPI intro: initial states exist only while html.mk-intro is present (set in <head>). */
+.mk-intro [data-mk="mask"]>*{translate:0 105%}
+.mk-intro [data-mk="mask"]{overflow:hidden}
+.mk-intro [data-mk="wipe-x"]{clip-path:inset(0 100% 0 0)}
+.mk-intro [data-mk="wipe-c"]{clip-path:inset(0 50% 0 50%)}
+.mk-intro [data-mk="fade"]{opacity:0}
+.mk-intro [data-mk="draw"] path{stroke-dasharray:0 100000}
+
+/* Grain overlay */
+.mk-grain{position:fixed;inset:-50%;z-index:100;pointer-events:none;opacity:var(--grain,.08);mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .mk-reveal [data-reveal]{opacity:1;translate:none}
+}
+
+/* ==== TOKENS (reference 1440 × 900) ==== */
+:root{
+  color-scheme:light;
+  --wall:#ded8cd; --shade:#e0dacf; --sun:#fefaf2; --sun-2:#fcf2e1; --sun-3:#f4dbb2;
+  --ink:#28231e; --ink-2:#3a342d; --muted:#574e44; --paper:#f9f4eb;
+  --line:rgba(40,35,30,.24); --line-soft:rgba(40,35,30,.13);
+  --accent:#c4873f; /* the sun itself: logo mark and caption glyph only */
+  --serif:"Newsreader","Iowan Old Style","Palatino Linotype",Georgia,serif;
+  --sans:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --h1:clamp(44px,min(5.3vw,8.6vh),92px); --lede:17px; --nav:14.5px; --btn:15px; --btn-h:54px; --hdr-btn-h:40px; --cap:13px;
+  --pad-x:56px; --pad-y:28px; --hero-gap:56px; --copy-max:940px; --lede-max:450px;
+  /* where the window light lands, and how steeply the low sun shears it */
+  --sun-x:40vw; --sun-y:2vh; --sun-w:66vw; --sun-h:62vh; --sun-skew:16deg;
+  --leaf-w:50%; --leaf-blur:4.5px; --bar-near:2px; --bar-far:9px;
+  --grain:.06;
+  --plaster:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='320' height='320'%3E%3Cfilter id='p' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.028' numOctaves='5' seed='4' stitchTiles='stitch'/%3E%3CfeDiffuseLighting surfaceScale='1.5' diffuseConstant='1.08' lighting-color='%23fff'%3E%3CfeDistantLight azimuth='205' elevation='55'/%3E%3C/feDiffuseLighting%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23p)'/%3E%3C/svg%3E");
+}
+
+/* ---- base ---- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{color:var(--ink)}
+body{font-family:var(--sans);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;overflow-x:hidden}
+a{color:inherit;text-decoration:none} button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--ink);outline-offset:4px}
+::selection{background:#f1d9b4;color:var(--ink)}
+
+/* ==== MEDIA: wall → light patch (glow, light, texture, bars, leaves) → plaster ==== */
+.media{position:fixed;inset:0;z-index:0;overflow:hidden;background:var(--wall)}
+.wall{position:absolute;inset:0;
+  background:
+    radial-gradient(64% 58% at 74% 36%,rgba(247,238,222,.6) 0%,rgba(247,238,222,0) 72%),  /* light bouncing around the patch */
+    radial-gradient(150% 120% at 34% 30%,rgba(0,0,0,0) 48%,rgba(92,76,56,.14) 100%),       /* room falloff toward the corners */
+    linear-gradient(180deg,#d9d2c6 0%,#e0dacf 52%,#dad3c7 100%)}
+
+.sun-drift{position:absolute;inset:0;animation:lang-drift 600s linear .2s both}
+@keyframes lang-drift{to{translate:1.4vw 5.5vh}}           /* ten minutes of sun, in real time */
+
+.sun-in{position:absolute;inset:0}
+.appear--sunrise{animation-name:lang-sunrise;--dur:2.8s;--ease:var(--ease-settle)}
+@keyframes lang-sunrise{from{opacity:0;filter:blur(22px);translate:-3vw -2.5vh}}
+
+.sun-geo{position:absolute;left:var(--sun-x);top:var(--sun-y);width:var(--sun-w);height:var(--sun-h);transform-origin:0 0;transform:skewY(var(--sun-skew))}
+.sun-glow{background:var(--sun-3);opacity:.55;filter:blur(64px)}
+/* soft edges: the side nearest the window (left) is sharper than the far side */
+.sun{
+  -webkit-mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 46px),transparent 100%),linear-gradient(180deg,transparent 0,#000 16px,#000 calc(100% - 30px),transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(90deg,transparent 0,#000 14px,#000 calc(100% - 46px),transparent 100%),linear-gradient(180deg,transparent 0,#000 16px,#000 calc(100% - 30px),transparent 100%);
+  mask-composite:intersect;
+  animation:lang-cloud 27s ease-in-out 5s infinite}
+@keyframes lang-cloud{0%,100%{opacity:1}44%{opacity:.9}58%{opacity:.92}}
+.sun-light{position:absolute;inset:0;background:linear-gradient(97deg,var(--sun) 0%,var(--sun-2) 52%,var(--sun-3) 100%)}
+.sun-tex{position:absolute;inset:0;background-image:var(--plaster);background-size:320px;mix-blend-mode:multiply;opacity:.22} /* raking light shows the trowel marks */
+.bars{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.bars rect{fill:var(--shade)}
+.bars--near{filter:blur(var(--bar-near));-webkit-mask-image:linear-gradient(90deg,#000 14%,transparent 62%);mask-image:linear-gradient(90deg,#000 14%,transparent 62%)}
+.bars--far{filter:blur(var(--bar-far));-webkit-mask-image:linear-gradient(90deg,transparent 16%,#000 66%);mask-image:linear-gradient(90deg,transparent 16%,#000 66%)}
+.leaves{position:absolute;right:11%;top:-7%;width:var(--leaf-w);aspect-ratio:1/1;transform-origin:96% 2%}
+.leaves svg{display:block;width:100%;height:100%;overflow:visible;opacity:.9;filter:blur(var(--leaf-blur))}
+.leaves path{fill:var(--shade)}
+.leaves--a{animation:lang-sway-a 9.5s ease-in-out infinite alternate}
+.leaves--b{animation:lang-sway-b 6.8s ease-in-out -2.4s infinite alternate}
+.leaves--b svg{opacity:.7;filter:blur(calc(var(--leaf-blur) * 1.5))}  /* further from the wall: paler, softer */
+@keyframes lang-sway-a{from{rotate:-1.3deg}to{rotate:1.5deg}}
+@keyframes lang-sway-b{from{rotate:-2.1deg;translate:0 0}to{rotate:1.7deg;translate:-.8% .9%}}
+.plaster{position:absolute;inset:0;background-image:var(--plaster);background-size:320px;mix-blend-mode:multiply;opacity:.13}
+
+/* ==== PAGE ==== */
+.page{position:relative;z-index:1;display:grid;grid-template-rows:auto 1fr;min-height:100vh;min-height:100dvh}
+
+/* header: logo | nav | cta */
+.header{position:relative;z-index:50;display:grid;grid-template-columns:1fr auto auto;align-items:center;column-gap:40px;
+  padding:var(--pad-y) var(--pad-x) 0;padding-top:max(var(--pad-y),env(safe-area-inset-top))}
+.logo{justify-self:start;display:inline-flex;align-items:center;gap:8px;min-height:44px;color:var(--ink)}
+.logo svg{width:28px;height:28px;flex:none;translate:0 -1px}
+.logo b{font-family:var(--serif);font-weight:400;font-size:26px;letter-spacing:-.025em;line-height:1;translate:0 -2px} /* optical: the serif sits low beside the mark */
+.nav{display:flex;align-items:center;gap:32px}
+.nav a{position:relative;font-size:var(--nav);letter-spacing:-.005em;color:var(--ink-2);padding:12px 0}
+.nav a::after{content:"";position:absolute;left:0;right:0;bottom:7px;height:1px;background:currentColor;scale:0 1;transform-origin:right;transition:scale .35s var(--ease-swift)}
+.nav a:hover::after{scale:1 1;transform-origin:left}
+.nav .nav-cta,.nav .nav-note{display:none}
+.burger{display:none}
+
+/* buttons: square ink panel that inverts (radius 0, like the window it echoes) */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:12px;height:var(--btn-h);padding:1px 26px 0;border-radius:0;
+  font-family:var(--sans);font-size:var(--btn);font-weight:500;letter-spacing:-.01em;line-height:1;white-space:nowrap;
+  transition:background-color .25s var(--ease-swift),color .25s var(--ease-swift)}
+.btn-ink{background:var(--ink);color:var(--paper);box-shadow:inset 0 0 0 1px var(--ink)}
+.btn-ink:hover{background:#fbf8f1;color:var(--ink)}
+.btn svg{width:15px;height:15px;flex:none;overflow:visible;translate:0 -1px}
+.btn svg path{fill:none;stroke:currentColor;stroke-width:1.4;stroke-linecap:square}
+.btn svg .tip{transition:translate .3s var(--ease-swift)}
+.btn:hover svg .tip{translate:0 2px}
+.header-cta{height:var(--hdr-btn-h);padding:1px 18px 0;font-size:14px}
+
+.quiet{display:inline-flex;align-items:center;gap:10px;min-height:44px;font-size:var(--btn);letter-spacing:-.01em;color:var(--ink-2)}
+.quiet span{padding-bottom:3px;border-bottom:1px solid var(--line);transition:border-color .3s var(--ease-swift)}
+.quiet svg{width:14px;height:14px;flex:none;overflow:visible;transition:translate .3s var(--ease-swift)}
+.quiet svg path{fill:none;stroke:currentColor;stroke-width:1.3}
+.quiet:hover span{border-color:var(--ink)}
+.quiet:hover svg{translate:3px 0}
+
+/* hero: copy bottom-left in the shade, caption bottom-right */
+.hero{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;column-gap:56px;min-height:0;
+  padding:0 var(--pad-x) var(--hero-gap);padding-bottom:max(var(--hero-gap),env(safe-area-inset-bottom))}
+.copy{max-width:var(--copy-max)}
+h1{font-family:var(--serif);font-weight:300;font-size:var(--h1);line-height:1.04;letter-spacing:-.034em;color:var(--ink);font-optical-sizing:auto}
+h1 .mask-line{padding-top:.26em;margin-top:-.26em}   /* room for stacked Vietnamese marks (ồ, ắ, ộ) inside the mask */
+h1 .l2{margin-left:var(--shift,1.05em)}                /* the second line has moved, the way the light has */
+.lede{max-width:var(--lede-max);margin-top:28px;font-size:var(--lede);line-height:1.62;letter-spacing:-.004em;color:var(--muted)}
+.actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 30px;margin-top:34px}
+
+.caption{max-width:236px;margin-bottom:8px;padding-top:14px;border-top:1px solid var(--line);font-size:var(--cap);line-height:1.55;letter-spacing:-.003em;color:var(--muted)}
+.caption svg{display:block;width:17px;height:13px;margin-bottom:10px}
+
+/* ---- breakpoints: tokens first ---- */
+@media (min-width:1600px){:root{--lede:18.5px;--nav:15px;--btn:16px;--btn-h:58px;--hdr-btn-h:44px;--cap:13.5px;--pad-x:72px;--pad-y:34px;--hero-gap:70px;--lede-max:510px;--copy-max:1100px}
+  .caption{max-width:262px}.logo b{font-size:30px}.logo svg{width:32px;height:32px}}
+@media (min-width:901px) and (max-width:1279px){:root{--lede:16px;--pad-x:36px;--lede-max:420px;--hero-gap:44px}.nav{gap:24px}.header{column-gap:28px}}
+@media (min-width:901px) and (max-height:820px){:root{--pad-y:22px;--hero-gap:40px}.lede{margin-top:22px}.actions{margin-top:28px}}
+@media (min-width:901px) and (max-height:700px){:root{--lede:15.5px;--btn-h:48px;--hdr-btn-h:36px;--hero-gap:28px;--pad-y:16px}.lede{margin-top:16px}.actions{margin-top:22px}}
+@media (min-width:901px){html,body{height:100%;overflow:hidden}.page{height:100vh;height:100dvh;overflow:hidden}}
+
+@media (max-width:900px){
+  :root{--h1:clamp(30px,9.1vw,54px);--lede:16px;--pad-x:20px;--pad-y:14px;--hero-gap:28px;--btn-h:54px;--cap:12.5px;
+    --sun-x:15vw;--sun-y:9vh;--sun-w:100vw;--sun-h:41vh;--sun-skew:14deg;--leaf-w:84%;--leaf-blur:3.5px;--bar-near:1.5px;--bar-far:6px}
+  .header{grid-template-columns:1fr auto auto;column-gap:10px}
+  .burger{display:grid;place-content:center;gap:6px;width:44px;height:44px;border:1px solid var(--line);background:rgba(250,246,238,.5);position:relative;z-index:80}
+  .burger i{display:block;width:18px;height:1.5px;background:var(--ink);transition:translate .3s var(--ease-swift),rotate .3s var(--ease-swift)}
+  .menu-open .burger i:nth-child(1){translate:0 3.75px;rotate:45deg}
+  .menu-open .burger i:nth-child(2){translate:0 -3.75px;rotate:-45deg}
+  /* full-screen light menu; stretch undoes the desktop grid placement (else it shrink-wraps) */
+  .nav{position:fixed;inset:0;z-index:45;justify-self:stretch;align-self:stretch;flex-direction:column;align-items:stretch;justify-content:flex-start;gap:0;
+    padding:calc(max(14px,env(safe-area-inset-top)) + 100px) var(--pad-x) max(24px,env(safe-area-inset-bottom));
+    background:rgba(230,224,213,.66);-webkit-backdrop-filter:blur(26px);backdrop-filter:blur(26px);
+    opacity:0;visibility:hidden;transition:opacity .35s var(--ease-settle),visibility .35s}
+  .menu-open .nav{opacity:1;visibility:visible}
+  .nav a{display:block;padding:18px 0 15px;border-bottom:1px solid var(--line-soft);font-family:var(--serif);font-weight:300;font-size:34px;
+    letter-spacing:-.03em;line-height:1.12;color:var(--ink)}
+  .nav a:first-child{border-top:1px solid var(--line-soft)}
+  .nav a::after{display:none}
+  .nav .nav-note{display:block;margin-top:auto;max-width:280px;font-size:15px;line-height:1.55;color:var(--muted)}
+  .nav .nav-cta{display:flex;margin-top:18px;border:0;padding:1px 24px 0;height:56px;font-family:var(--sans);font-weight:500;font-size:16px;letter-spacing:-.01em;line-height:1;color:var(--paper)}
+  .menu-open .nav a>span{display:inline-block;animation:mk-in-soft .8s var(--ease-expo) both;animation-delay:calc(var(--i,0) * 70ms + 80ms)}
+  .logo,.header-cta{position:relative;z-index:80}
+  body.menu-open{overflow:hidden}
+  .hero{transition:opacity .3s var(--ease-settle)}
+  .menu-open .hero{opacity:0}                              /* only the wall and its light stay behind the menu */
+
+  .hero{display:flex;flex-direction:column;justify-content:flex-end;align-items:stretch;padding:0 var(--pad-x) var(--hero-gap)} /* not the desktop grid's align-items:end */
+  h1 .l2{--shift:.62em}
+  .caption{max-width:none;margin:34px 0 0;display:grid;grid-template-columns:auto 1fr;column-gap:12px;align-items:start}
+  .caption svg{margin:3px 0 0}
+}
+@media (max-width:560px){
+  .header-cta{display:none}
+  .actions{flex-direction:column;align-items:stretch;gap:8px}
+  .actions .btn{width:100%}
+  .quiet{align-self:flex-start}
+}
+@media (max-width:340px){:root{--h1:28px}h1 .l2{--shift:.34em}}
+@media (max-width:900px) and (max-height:700px){:root{--hero-gap:22px;--sun-h:38vh}.lede{margin-top:20px}.actions{margin-top:26px}.caption{margin-top:24px}}
+
+/* the caption describes the drift; without motion it would not be true, so it goes */
+@media (prefers-reduced-motion:reduce){.caption{display:none}}
+</style>
+</head>
+<body>
+<div class="mk-grain" aria-hidden="true"></div>
+
+<!-- MEDIA. Drawn, not filmed: no files to load. To use real footage instead, put this inside .media
+     after .wall and delete .sun-drift and .plaster:
+       <video class="wall-video" autoplay muted loop playsinline preload="metadata" poster="lang-tuong.jpg"
+              aria-hidden="true" tabindex="-1" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:70% 30%">
+         <source src="lang-tuong.mp4" type="video/mp4"></video>
+     Generation prompt: "Early-morning sunlight falling through a two-casement wooden window with a transom
+     onto a warm off-white lime-plaster wall, the light patch sheared into a parallelogram by a low sun from
+     the left, filling the upper-right two-thirds of the frame; the soft shadow of a bamboo sprig inside the
+     light; the lower-left third of the wall in even, quiet shade and empty (headline goes there); 6:30 am,
+     35mm, locked-off camera, palette bone, warm sand, pale honey light, fine film grain, photographic,
+     no furniture, no people, no text, no logo.
+     Video: camera does not move; only the leaf shadows sway; 8-second loop with no visible cut, 24 fps." -->
+<div class="media" aria-hidden="true">
+  <div class="wall"></div>
+  <div class="sun-drift">
+    <div class="sun-in appear appear--sunrise" style="--d:.1s">
+      <div class="sun-geo sun-glow"></div>
+      <div class="sun-geo sun">
+        <div class="sun-light"></div>
+        <div class="sun-tex"></div>
+        <!-- window shadow: mullion, transom, two transom-light bars, one glazing bar per casement -->
+        <svg class="bars bars--near" viewBox="0 0 1000 600" preserveAspectRatio="none" focusable="false">
+          <rect x="466" y="0" width="34" height="600"/><rect x="0" y="170" width="1000" height="24"/>
+          <rect x="228" y="0" width="9" height="170"/><rect x="738" y="0" width="9" height="170"/>
+          <rect x="0" y="396" width="1000" height="9"/>
+        </svg>
+        <svg class="bars bars--far" viewBox="0 0 1000 600" preserveAspectRatio="none" focusable="false">
+          <rect x="466" y="0" width="34" height="600"/><rect x="0" y="170" width="1000" height="24"/>
+          <rect x="228" y="0" width="9" height="170"/><rect x="738" y="0" width="9" height="170"/>
+          <rect x="0" y="396" width="1000" height="9"/>
+        </svg>
+        <div class="leaves leaves--b"><svg viewBox="0 0 600 600" focusable="false"><path d="M648.3 148.1L638.3 157.5L628.1 167.5L617.9 178.2L607.5 189.6L597.1 201.6L586.5 214.3L575.8 227.7L565.0 241.8L554.1 256.5L543.1 271.9L532.0 288.0L520.8 304.8L509.5 322.2L498.1 340.3L486.5 359.1L474.9 378.6L463.1 398.7L451.2 419.6L452.8 420.4L464.8 399.7L476.7 379.7L488.5 360.3L500.2 341.6L511.7 323.7L523.2 306.3L534.5 289.7L545.7 273.8L556.9 258.5L567.9 243.9L578.7 230.0L589.5 216.8L600.2 204.3L610.7 192.4L621.1 181.3L631.4 170.8L641.6 161.0L651.7 151.9Z M555.5 257.5C555.1 271.9 547.6 300.6 531.6 337.0C519.6 357.6 510.1 372.2 505.3 380.2C507.7 366.7 509.5 352.9 514.3 331.8C521.7 311.8 531.1 289.9 546.5 266.4Z M555.5 257.5C549.1 269.3 531.2 290.7 503.5 316.1C485.5 329.8 472.0 339.2 465.0 344.4C472.2 333.6 478.9 322.2 491.0 305.6C505.0 291.2 521.6 275.8 544.1 261.6Z M555.5 257.5C543.8 266.3 516.5 278.3 477.7 288.5C453.7 291.9 436.3 293.6 426.9 294.8C439.1 288.1 451.1 280.6 470.7 270.9C491.1 264.2 514.4 257.9 542.7 255.6Z M452.0 420.0C456.9 434.9 461.5 467.7 462.7 512.4C461.2 539.1 459.4 558.5 458.8 568.9C455.5 554.0 451.5 539.1 447.1 515.3C445.3 491.4 444.6 464.6 448.0 433.4Z M452.0 420.0C452.9 434.4 448.7 464.1 437.8 503.1C429.0 525.8 421.9 541.9 418.4 550.7C419.2 536.9 419.3 522.8 421.5 500.9C426.2 479.7 432.6 456.3 444.5 430.4Z M452.0 420.0C449.6 432.9 438.0 457.1 415.9 485.9C399.7 501.2 386.9 511.5 380.1 517.1C385.8 506.4 390.7 495.2 399.8 478.1C410.9 462.2 423.8 444.7 442.1 426.4Z M612.0 40.0C605.5 48.9 588.4 63.2 562.6 78.4C546.0 85.5 533.7 90.1 527.2 92.7C534.6 85.5 541.7 77.7 553.9 66.8C567.1 57.8 582.6 48.6 602.4 41.3Z M612.0 40.0C600.5 45.8 574.6 52.7 538.7 57.3C517.0 57.9 501.3 57.7 492.8 57.9C504.5 53.8 516.1 49.2 534.9 43.5C553.9 40.1 575.4 37.2 600.9 37.7Z"/></svg></div>
+        <div class="leaves leaves--a"><svg viewBox="0 0 600 600" focusable="false"><path d="M638.0 -32.8L622.3 -21.2L606.4 -8.9L590.2 4.1L573.8 17.9L557.1 32.3L540.2 47.5L523.0 63.4L505.5 80.0L487.8 97.3L469.9 115.3L451.7 134.1L433.2 153.5L414.5 173.7L395.5 194.6L376.3 216.2L356.8 238.5L337.1 261.5L317.1 285.2L318.9 286.8L339.1 263.2L359.0 240.4L378.7 218.3L398.1 196.9L417.2 176.2L436.1 156.3L454.7 137.0L473.1 118.5L491.2 100.7L509.0 83.6L526.5 67.2L543.8 51.6L560.9 36.7L577.6 22.5L594.1 9.0L610.4 -3.8L626.3 -15.8L642.0 -27.2Z M514.3 72.8L505.0 76.7L495.8 80.5L486.8 84.1L478.0 87.6L469.3 90.9L460.9 94.0L452.5 97.0L444.4 99.8L436.4 102.5L428.6 105.0L420.9 107.3L413.4 109.5L406.1 111.5L398.9 113.4L391.9 115.2L385.1 116.7L378.4 118.1L371.9 119.4L372.1 120.6L378.7 119.5L385.4 118.2L392.3 116.8L399.3 115.2L406.5 113.4L413.9 111.5L421.5 109.4L429.2 107.2L437.1 104.8L445.2 102.2L453.4 99.5L461.8 96.6L470.4 93.6L479.1 90.4L488.0 87.1L497.1 83.6L506.3 79.9L515.7 76.1Z M515.0 74.5C508.6 88.8 488.3 113.1 454.4 139.2C431.1 151.6 413.3 159.3 403.7 163.6C413.4 153.0 422.2 141.5 437.6 124.6C455.0 109.8 475.0 93.7 501.6 78.6Z M515.0 74.5C503.1 85.5 474.3 103.2 432.7 122.1C406.7 131.1 387.7 136.9 377.6 140.2C390.2 130.9 402.5 120.9 423.0 106.9C444.7 95.6 469.6 84.2 500.6 75.6Z M372.0 120.0C362.4 135.1 336.3 161.5 296.7 192.0C271.1 207.7 252.1 218.3 242.1 224.4C253.2 211.3 263.7 197.5 282.1 177.5C302.4 160.1 326.1 141.8 357.0 124.8Z M372.0 120.0C357.5 130.2 323.9 144.1 276.3 156.1C247.1 160.1 225.8 162.1 214.4 163.5C229.5 156.2 244.5 148.1 268.9 137.5C293.9 129.8 322.4 122.4 356.7 118.8Z M372.0 120.0C354.9 125.5 317.5 128.7 266.7 124.2C236.4 117.2 214.5 110.7 202.7 107.3C219.7 106.8 236.7 105.1 263.8 104.1C290.9 105.6 321.4 107.8 356.9 114.5Z M416.6 174.1C419.1 190.4 416.6 224.2 406.5 268.6C397.5 294.5 390.1 312.9 386.4 323.0C386.4 307.3 385.6 291.4 386.5 266.6C390.6 242.6 396.5 216.0 408.5 186.2Z M416.6 174.1C412.1 194.2 394.0 232.5 362.3 279.9C340.1 306.1 323.3 324.4 314.5 334.5C321.7 316.3 328.0 297.5 340.5 269.1C356.0 242.9 374.9 214.4 402.1 184.8Z M416.6 174.1C407.3 187.7 382.6 211.7 345.6 239.5C321.8 254.1 304.2 264.0 294.9 269.6C305.3 257.4 315.1 244.6 332.3 226.1C351.3 210.1 373.5 193.3 402.4 178.2Z M318.0 286.0C327.1 305.6 337.9 349.4 344.8 409.8C345.5 446.4 345.1 472.9 345.3 487.1C338.2 467.4 330.0 447.7 320.2 416.0C314.7 383.9 310.4 347.7 312.8 304.7Z M318.0 286.0C322.3 303.9 321.8 341.7 311.1 391.9C300.1 421.3 290.5 442.4 285.4 453.7C286.4 436.6 286.0 419.3 287.5 392.0C292.0 365.0 297.8 334.8 309.6 300.3Z M318.0 286.0C313.3 302.7 296.2 334.9 266.1 374.3C244.8 395.7 228.2 410.4 219.4 418.3C227.8 404.2 235.4 389.4 248.9 366.7C264.3 345.2 281.9 321.3 305.7 295.6Z M318.0 286.0C309.7 301.1 286.0 327.1 249.3 356.8C225.2 372.0 207.2 382.1 197.8 387.9C207.4 374.6 216.4 360.4 232.6 340.1C251.2 323.0 273.2 305.1 302.9 289.6Z"/></svg></div>
+      </div>
+    </div>
+  </div>
+  <div class="plaster"></div>
+</div>
+
+<div class="page">
+  <header class="header">
+    <a class="logo appear appear--scale" href="#top" style="--d:.08s" aria-label="Lặng, về đầu trang">
+      <!-- mark: the hero's light patch, small — a sheared pane of sun with the window cross cut out -->
+      <svg viewBox="0 0 28 28" aria-hidden="true" focusable="false">
+        <defs><mask id="lang-mark"><rect width="28" height="28" fill="#fff"/><path d="M13.25 0h1.5v28h-1.5zM0 8.1l28 8.75v1.5L0 9.6z" fill="#000"/></mask>
+          <linearGradient id="lang-mark-g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9a15a"/><stop offset="1" stop-color="#bf7f37"/></linearGradient></defs>
+        <path d="M6 2.5 22 7.5V25.5L6 20.5z" fill="url(#lang-mark-g)" mask="url(#lang-mark)"/>
+      </svg>
+      <b>Lặng</b>
+    </a>
+    <nav class="nav" id="site-nav" aria-label="Chính">
+      <a class="appear appear--soft" href="#dieu-lang-khong-lam" style="--d:.2s;--i:0"><span>Điều Lặng không làm</span></a>
+      <a class="appear appear--soft" href="#hoi-dap" style="--d:.3s;--i:1"><span>Hỏi đáp</span></a>
+      <p class="nav-note">Mười phút mỗi sáng. Không thông báo, không streak.</p>
+      <a class="btn btn-ink nav-cta" href="#tai-lang" style="--i:2"><span>Tải Lặng cho sáng mai</span></a>
+    </nav>
+    <a class="btn btn-ink header-cta appear appear--wipe-x" href="#tai-lang" style="--d:.4s">Tải Lặng</a>
+    <button class="burger appear appear--scale" type="button" style="--d:.3s" aria-controls="site-nav" aria-expanded="false" aria-label="Mở menu"><i></i><i></i></button>
+  </header>
+
+  <main class="hero" id="top">
+    <div class="copy">
+      <h1>
+        <span class="mask-line"><span class="appear appear--mask" style="--d:.55s;--dur:1.2s">Mười phút ngồi yên,</span></span>
+        <span class="mask-line l2"><span class="appear appear--mask" style="--d:.7s;--dur:1.2s">nắng dịch một gang tay.</span></span>
+      </h1>
+      <p class="lede appear appear--soft" style="--d:.95s;--dur:1.25s">Lặng chỉ làm một việc: đếm giúp bạn mười phút ngồi yên mỗi sáng. Không thông báo réo gọi, không streak phải giữ. Hôm nào muốn ngồi thì mở ra.</p>
+      <div class="actions">
+        <a class="btn btn-ink appear appear--wipe-x" href="#tai-lang" style="--d:1.15s;--dur:.85s">Tải Lặng cho sáng mai
+          <svg viewBox="0 0 15 15" aria-hidden="true" focusable="false"><path class="tip" d="M7.5 1.5v8.6M3.6 6.4l3.9 3.9 3.9-3.9"/><path d="M2 13.3h11"/></svg></a>
+        <a class="quiet appear appear--side" href="#mot-buoi-ngoi" style="--d:1.3s"><span>Một buổi ngồi trông thế nào</span>
+          <svg viewBox="0 0 14 14" aria-hidden="true" focusable="false"><path d="M1 7h11.2M8.4 3.2 12.2 7l-3.8 3.8"/></svg></a>
+      </div>
+    </div>
+    <p class="caption appear appear--soft" style="--d:1.6s">
+      <svg viewBox="0 0 17 13" aria-hidden="true" focusable="false"><path d="M.5 .5 16.5 4.6v7.9L.5 8.4z" fill="none" stroke="#c4873f" stroke-width="1"/></svg>
+      <span>Ô nắng trên trang này trôi theo thời gian thật. Ở lại đủ mười phút, bạn sẽ thấy nó đã dời đi một quãng.</span>
+    </p>
+  </main>
+</div>
+
+<script>
+/* ==== motion-kit.js (inlined) ==== */
+/* ==========================================================================
+   motion-kit.js: small, dependency-free helpers for choreographed motion.
+   Exposes window.MK. Every helper respects prefers-reduced-motion and leaves the page fully
+   visible if anything fails.
+
+   Optional head snippet for WAAPI intros: hides [data-mk] targets before first paint, with a
+   4 s failsafe. Put it in its own script tag inside <head>:
+     (function(r){try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&typeof r.animate==="function"){r.classList.add("mk-intro");window.__mkFailsafe=setTimeout(function(){r.classList.remove("mk-intro")},4000)}}catch(e){}})(document.documentElement);
+   ========================================================================== */
+(function (w, d) {
+  "use strict";
+  var reduced = w.matchMedia && w.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var EASE = {
+    expo: "cubic-bezier(.16,1,.3,1)", draw: "cubic-bezier(.62,.04,.22,1)",
+    wipe: "cubic-bezier(.77,0,.18,1)", settle: "cubic-bezier(.25,1,.5,1)"
+  };
+  function $$(s, root) { return typeof s === "string" ? Array.prototype.slice.call((root || d).querySelectorAll(s)) : (s.length != null ? Array.prototype.slice.call(s) : [s]); }
+
+  /* 1. CSS entrances: mark finished elements, force-finish if animations never run. */
+  function appear(root) {
+    var els = $$(".appear", root);
+    els.forEach(function (el) {
+      el.addEventListener("animationend", function (e) { if (e.target === el) el.classList.add("is-in"); });
+    });
+    var done = function () { els.forEach(function (el) { el.classList.add("is-in"); }); };
+    if (reduced) return done();
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      var running = d.getAnimations ? d.getAnimations().length : 0;
+      if (!running) done();
+    }); });
+    // Belt and braces: whatever happens, everything is in after 4 s.
+    setTimeout(done, 4000);
+  }
+
+  /* 2. WAAPI intro orchestration.
+     MK.intro(function (add) { add(el, keyframes, {duration, delay, easing}); … }, {images: [img]})
+     Waits for fonts + image decode (hard start at 1200 ms), plays once, then removes html.mk-intro
+     and cancels every animation in the same frame so static CSS is the final state. */
+  function intro(build, opts) {
+    opts = opts || {};
+    var root = d.documentElement;
+    if (reduced || typeof root.animate !== "function") { root.classList.remove("mk-intro"); return; }
+    var anims = [], started = false;
+    function add(el, kf, o) { if (!el) return null; o = o || {}; o.fill = "both"; if (!o.easing) o.easing = EASE.expo; var a = el.animate(kf, o); anims.push(a); return a; }
+    function play() {
+      if (started) return; started = true;
+      requestAnimationFrame(function () {
+        try { build(add, EASE); } catch (err) { console.error(err); }
+        clearTimeout(w.__mkFailsafe);
+        root.classList.remove("mk-intro"); // fill:both now holds the from-states
+        Promise.all(anims.map(function (a) { return a.finished; })).then(function () {
+          anims.forEach(function (a) { a.cancel(); }); anims.length = 0;
+        }, function () {});
+      });
+    }
+    var waits = [d.fonts ? d.fonts.ready : 0];
+    (opts.images || []).forEach(function (img) { if (img && img.decode) waits.push(img.decode().catch(function () {})); });
+    Promise.all(waits).then(play, play);
+    setTimeout(play, opts.hardStart || 1200);
+  }
+
+  /* 3. Masked lines: each [data-mk="mask"] wrapper's first child rises from 105%. */
+  function maskLines(add, sel, o) {
+    o = o || {};
+    $$(sel).forEach(function (wrap, i) {
+      var inner = wrap.firstElementChild || wrap;
+      add(inner, [{ translate: "0 105%" }, { translate: "0 0" }],
+        { duration: o.duration || 800, delay: (o.start || 0) + i * (o.step || 70), easing: EASE.expo });
+    });
+  }
+
+  /* 4. Letters: split a word into spans with optional per-letter kerning (in em), rise each. */
+  function letters(el, o) {
+    o = o || {};
+    var text = el.textContent; var kern = o.kerning || [];
+    el.setAttribute("aria-label", text.trim());
+    el.textContent = "";
+    var spans = [];
+    Array.prototype.forEach.call(text, function (ch, i) {
+      var s = d.createElement("span");
+      s.setAttribute("aria-hidden", "true");
+      s.style.display = "inline-block";
+      if (ch === " ") s.innerHTML = "&nbsp;"; else s.textContent = ch;
+      if (kern[i]) s.style.marginLeft = kern[i] + "em";
+      el.appendChild(s); spans.push(s);
+    });
+    return spans;
+  }
+  function riseLetters(add, spans, o) {
+    o = o || {};
+    spans.forEach(function (s, i) {
+      add(s, [{ translate: "0 105%" }, { translate: "0 0" }],
+        { duration: o.duration || 1000, delay: (o.start || 200) + i * (o.step || 38), easing: EASE.expo });
+    });
+  }
+
+  /* 5. Draw SVG strokes outward from their midpoint. */
+  function draw(add, paths, o) {
+    o = o || {};
+    $$(paths).forEach(function (p, i) {
+      var L = p.getTotalLength();
+      var from = o.fromMiddle === false
+        ? { strokeDasharray: "0px " + L + "px", strokeDashoffset: "0px" }
+        : { strokeDasharray: "0px " + L + "px", strokeDashoffset: (-L / 2) + "px" };
+      add(p, [from, { strokeDasharray: L + "px " + L + "px", strokeDashoffset: "0px" }],
+        { duration: o.duration || 1250, delay: (o.delays && o.delays[i] != null) ? o.delays[i] : (o.start || 100) + i * (o.step || 60), easing: EASE.draw });
+    });
+  }
+
+  /* 6. Clip-path wipes. from: "left" | "center" | "bottom". */
+  function wipe(add, el, o) {
+    o = o || {};
+    var start = { left: "inset(0 100% 0 0)", center: "inset(0 50% 0 50%)", bottom: "inset(100% 0 0 0)" }[o.from || "left"];
+    $$(el).forEach(function (e, i) {
+      add(e, [{ clipPath: start }, { clipPath: "inset(0 0% 0 0%)" }],
+        { duration: o.duration || 750, delay: (o.delay || 0) + i * (o.step || 90), easing: EASE.wipe });
+    });
+  }
+
+  /* 7. Magnet: element drifts toward the cursor inside a padding zone (fine pointers only). */
+  function magnet(el, o) {
+    o = o || {};
+    if (reduced || !w.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    var pad = o.padding || 120, strength = o.strength || 4;
+    el.style.willChange = "transform";
+    w.addEventListener("mousemove", function (e) {
+      var r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var inside = Math.abs(e.clientX - cx) < r.width / 2 + pad && Math.abs(e.clientY - cy) < r.height / 2 + pad;
+      el.style.transition = inside ? "transform .3s ease-out" : "transform .6s ease-in-out";
+      el.style.transform = inside ? "translate3d(" + (e.clientX - cx) / strength + "px," + (e.clientY - cy) / strength + "px,0)" : "translate3d(0,0,0)";
+    }, { passive: true });
+  }
+
+  /* 8. Reveal on scroll (opt-in hiding: CSS hides [data-reveal] only under html.mk-reveal). */
+  function reveal(o) {
+    o = o || {};
+    var els = $$("[data-reveal]");
+    if (reduced || !("IntersectionObserver" in w) || !els.length) return;
+    d.documentElement.classList.add("mk-reveal");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("is-revealed"); io.unobserve(en.target); } });
+    }, { rootMargin: o.rootMargin || "0px 0px -10% 0px", threshold: 0 });
+    els.forEach(function (el) { io.observe(el); });
+  }
+
+  /* 9. Opposing rows that move with scroll. rows: [{el, dir: 1|-1}] */
+  function scrollRows(section, rows, o) {
+    o = o || {};
+    if (reduced) return;
+    var factor = o.factor || 0.3, offset = o.offset || 200, ticking = false;
+    function update() {
+      ticking = false;
+      var top = section.getBoundingClientRect().top + w.scrollY;
+      var v = (w.scrollY - top + w.innerHeight) * factor;
+      rows.forEach(function (r) { r.el.style.transform = "translate3d(" + (r.dir > 0 ? v - offset : -(v - offset)) + "px,0,0)"; });
+    }
+    rows.forEach(function (r) { r.el.style.willChange = "transform"; });
+    w.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
+  /* 10. Character scroll reveal: opacity .2 → 1 across ['start 0.8', 'end 0.2']. */
+  function charReveal(el) {
+    var text = el.textContent;
+    el.setAttribute("aria-label", text.trim());
+    el.textContent = "";
+    var chars = Array.prototype.map.call(text, function (ch) {
+      var s = d.createElement("span"); s.setAttribute("aria-hidden", "true"); s.textContent = ch; el.appendChild(s); return s;
+    });
+    if (reduced) return;
+    var n = chars.length, ticking = false;
+    function update() {
+      ticking = false;
+      var r = el.getBoundingClientRect(), vh = w.innerHeight;
+      var start = vh * 0.8, end = vh * 0.2;              // element top at 80% → element bottom at 20%
+      var p = (start - r.top) / ((start - end) + r.height);
+      p = Math.max(0, Math.min(1, p));
+      chars.forEach(function (c, i) { var t = Math.max(0, Math.min(1, p * n - i)); c.style.opacity = (0.2 + 0.8 * t).toFixed(3); });
+    }
+    w.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
+  /* 11. Mobile menu: body.menu-open toggle with aria, Escape, link click and resize close. */
+  function menu(burger, nav, o) {
+    o = o || {};
+    var bp = o.breakpoint || 901;
+    function set(open) {
+      d.body.classList.toggle("menu-open", open);
+      burger.setAttribute("aria-expanded", String(open));
+      burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+    burger.addEventListener("click", function () { set(!d.body.classList.contains("menu-open")); });
+    $$("a", nav).forEach(function (a) { a.addEventListener("click", function () { set(false); }); });
+    w.addEventListener("keydown", function (e) { if (e.key === "Escape") set(false); });
+    var mq = w.matchMedia("(min-width: " + bp + "px)");
+    (mq.addEventListener ? mq.addEventListener.bind(mq, "change") : mq.addListener.bind(mq))(function (m) { if (m.matches) set(false); });
+    return set;
+  }
+
+  w.MK = { reduced: reduced, EASE: EASE, appear: appear, intro: intro, maskLines: maskLines, letters: letters,
+    riseLetters: riseLetters, draw: draw, wipe: wipe, magnet: magnet, reveal: reveal, scrollRows: scrollRows,
+    charReveal: charReveal, menu: menu };
+})(window, document);
+</script>
+<script>
+MK.appear();
+/* mobile menu, Vietnamese labels */
+(function (d) {
+  var b = d.querySelector(".burger"), nav = d.getElementById("site-nav");
+  if (!b || !nav) return;
+  function set(open, focusFirst) {
+    d.body.classList.toggle("menu-open", open);
+    b.setAttribute("aria-expanded", String(open));
+    b.setAttribute("aria-label", open ? "Đóng menu" : "Mở menu");
+    /* the nav is still visibility:hidden in this frame; focus once its transition has started */
+    if (open && focusFirst) setTimeout(function () { var f = nav.querySelector("a"); if (f) f.focus({ preventScroll: true }); }, 60);
+  }
+  b.addEventListener("click", function () { set(!d.body.classList.contains("menu-open"), true); });
+  Array.prototype.forEach.call(nav.querySelectorAll("a"), function (a) { a.addEventListener("click", function () { set(false); }); });
+  addEventListener("keydown", function (e) { if (e.key === "Escape" && d.body.classList.contains("menu-open")) { set(false); b.focus(); } });
+  var mq = matchMedia("(min-width: 901px)");
+  (mq.addEventListener ? mq.addEventListener.bind(mq, "change") : mq.addListener.bind(mq))(function (m) { if (m.matches) set(false); });
+})(document);
+</script>
+</body>
+</html>

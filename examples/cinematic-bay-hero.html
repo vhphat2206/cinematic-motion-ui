@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Hạ Long Atelier · Xưởng kiến trúc resort ven biển Quảng Ninh</title>
+<meta name="description" content="Hạ Long Atelier là xưởng kiến trúc chuyên resort ven biển Quảng Ninh: xoay từng phòng về một hòn đảo đá, dựng vách lá chớp gỗ để giữ mùa đông ở bên ngoài.">
+<meta name="theme-color" content="#e7e6e0">
+<!--
+  Archetype A · cinematic full-bleed, light variant (sương sớm / morning sea-mist).
+  Concept: the hero is the view from inside a resort room. A wall of teak louvre blades opens left → right
+  to reveal Hạ Long in mist; the last blades on the right stay half-closed, which is the headline made literal
+  ("Mở phòng ra vịnh, khép lại trước gió bấc").
+  Type: Archivo (display 320 at wdth 104, UI 400–600) + Geist Mono (micro-copy). Both ship a Vietnamese subset.
+  Palette: fog #e7e6e0 · ink #17201e · muted #4b5754 · teak #3a2719 · cream #efe7da · accent #c58a52
+  Accent used three times only: the closed blade in the logo mark, the north-east petal of the wind rose,
+  the primary button's hover.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..110,300..600&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<!-- Hold every entrance at frame 0 (closed louvres, text below its masks) until the two faces are ready, so the
+     headline never rises in a fallback face. JS-only and capped at 900 ms: with JS off the class is never added. -->
+<script>(function(r){try{if(matchMedia("(prefers-reduced-motion: reduce)").matches)return;r.classList.add("cm-hold");var go=function(){r.classList.remove("cm-hold")};setTimeout(go,900);if(document.fonts&&document.fonts.load){Promise.all([document.fonts.load('320 64px "Archivo"',"Mở phòng ra vịnh"),document.fonts.load('400 16px "Archivo"',"Xưởng"),document.fonts.load('400 12px "Geist Mono"',"GIÓ MÙA ĐÔNG BẮC")]).then(go,go)}}catch(e){}})(document.documentElement);</script>
+<style>
+/* ---- anti-flash: background first ---- */
+html,body{background:#e7e6e0}
+
+/* ==== motion-kit.css (inlined) ==== */
+/* ==========================================================================
+   motion-kit.css: entrance vocabulary with a visible resting state.
+   Usage: <h1 class="appear appear--mask" style="--d:.42s">…</h1>
+   Elements are fully visible in their normal styles; the hidden state exists only in each
+   keyframe's `from`, applied during the delay by fill-mode `both`. Pair with motion-kit.js
+   (MK.appear) for the `.is-in` cleanup and the failsafe.
+   ========================================================================== */
+
+:root{
+  --ease-expo:cubic-bezier(.16,1,.3,1);
+  --ease-draw:cubic-bezier(.62,.04,.22,1);
+  --ease-wipe:cubic-bezier(.77,0,.18,1);
+  --ease-settle:cubic-bezier(.25,1,.5,1);
+  --ease-swift:cubic-bezier(.2,.8,.2,1);
+}
+
+.appear{
+  animation-duration:var(--dur,1.05s);
+  animation-fill-mode:both;
+  animation-timing-function:var(--ease,var(--ease-expo));
+  animation-delay:var(--d,.08s);
+}
+.appear--scale{animation-name:mk-in-scale}
+.appear--soft{animation-name:mk-in-soft}
+.appear--rise{animation-name:mk-in-rise}
+.appear--pop{animation-name:mk-in-pop}
+.appear--btn{animation-name:mk-in-btn}
+.appear--side{animation-name:mk-in-side}
+.appear--blur{animation-name:mk-in-blur;--dur:1.2s}
+.appear--spin{animation-name:mk-in-spin;--dur:.9s}
+.appear--media{animation-name:mk-in-media;--dur:1.6s}
+.appear--wipe-x{animation-name:mk-in-wipe-x;--ease:var(--ease-wipe);--dur:.75s}
+.appear--wipe-c{animation-name:mk-in-wipe-c;--ease:var(--ease-wipe);--dur:.8s}
+.appear--fade{animation-name:mk-in-fade;--ease:var(--ease-settle);--dur:.6s}
+
+/* Masked line: wrapper clips, inner span rises. Padding keeps descenders/italics unclipped. */
+.mask-line{display:block;overflow:hidden;padding:.06em .15em .14em;margin:-.06em -.15em -.14em}
+.mask-line>.appear--mask{display:inline-block;animation-name:mk-in-mask}
+
+/* Keyframes use the individual transform properties (translate/scale/rotate) so they compose with
+   any transform the element already has (e.g. translateX(-50%) centring) instead of replacing it. */
+@keyframes mk-in-scale{from{opacity:0;scale:.84}}
+@keyframes mk-in-soft{from{opacity:0;translate:0 14px}}
+@keyframes mk-in-rise{from{opacity:0;translate:0 20px}}
+@keyframes mk-in-pop{0%{opacity:0;scale:.9}70%{opacity:1;scale:1.03}100%{scale:1}}
+@keyframes mk-in-btn{from{opacity:0;translate:0 18px;scale:.94}}
+@keyframes mk-in-side{from{opacity:0;translate:22px 0}}
+@keyframes mk-in-mask{from{opacity:0;translate:0 110%}}
+@keyframes mk-in-blur{from{opacity:.35;filter:blur(4px)}}
+@keyframes mk-in-spin{0%{scale:.2;rotate:-50deg}65%{scale:1.2;rotate:8deg}100%{scale:1;rotate:0deg}}
+@keyframes mk-in-media{from{opacity:0;scale:1.06;filter:blur(6px)}}
+@keyframes mk-in-wipe-x{from{clip-path:inset(0 100% 0 0)}}
+@keyframes mk-in-wipe-c{from{clip-path:inset(0 50% 0 50%)}}
+@keyframes mk-in-fade{from{opacity:0}}
+
+/* Finished: drop the animation. The element's own styles are the end state, so nothing else is forced
+   (forcing transform:none here would wipe transforms the element legitimately has). */
+.is-in{animation:none!important}
+
+/* Reveal-on-scroll: hidden ONLY when JS has opted in (html.mk-reveal), so content shows without JS. */
+.mk-reveal [data-reveal]:not(.is-revealed){opacity:0;translate:0 24px}
+.mk-reveal [data-reveal]{transition:opacity .9s var(--ease-expo),translate .9s var(--ease-expo);transition-delay:var(--d,0s)}
+
+/* WAAPI intro: initial states exist only while html.mk-intro is present (set in <head>). */
+.mk-intro [data-mk="mask"]>*{translate:0 105%}
+.mk-intro [data-mk="mask"]{overflow:hidden}
+.mk-intro [data-mk="wipe-x"]{clip-path:inset(0 100% 0 0)}
+.mk-intro [data-mk="wipe-c"]{clip-path:inset(0 50% 0 50%)}
+.mk-intro [data-mk="fade"]{opacity:0}
+.mk-intro [data-mk="draw"] path{stroke-dasharray:0 100000}
+
+/* Grain overlay */
+.mk-grain{position:fixed;inset:-50%;z-index:100;pointer-events:none;opacity:var(--grain,.08);mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+  .mk-reveal [data-reveal]{opacity:1;translate:none}
+}
+
+/* ==== tokens (reference 1440 × 900) ==== */
+:root{
+  --bg:#e7e6e0; --fog:#e4e3dd; --ink:#17201e; --muted:#4b5754; --line:rgba(23,32,30,.2);
+  --teak-0:#1d140c; --teak-1:#3a2719; --teak-2:#5a3d27; --cream:#efe7da; --cream-dim:rgba(239,231,218,.66);
+  --accent:#c58a52;
+  --sans:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --mono:"Geist Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --h1:68px; --lede:16.5px; --nav:14px; --micro:11.5px; --btn:14.5px; --btn-h:50px;
+  --pad-x:44px; --pad-y:28px; --bottom:54px; --copy-max:880px; --lede-max:468px; --lede-gap:22px; --act-gap:30px;
+  --nav-col:calc(36vw - var(--pad-x));
+  /* scene artboard: 1600 × 1000, cover-scaled; horizon at 47 % */
+  --vw:100vw; --vh:100vh;
+  --sc:max(calc(var(--vw) / 1600), calc(var(--vh) / 1000));
+  --scene-x:0;
+  --wood-tex:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='700'%3E%3Cfilter id='w'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.42 .0045' numOctaves='3' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .09  0 0 0 0 .05  0 0 0 0 .02  0 0 0 1.25 -.42'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23w)'/%3E%3C/svg%3E");
+}
+@supports (height:100dvh){:root{--vh:100dvh}}
+
+/* ---- base ---- */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{color:var(--ink)}
+body{font-family:var(--sans);font-weight:400;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility;overflow-x:hidden}
+a{color:inherit;text-decoration:none} button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:1px solid currentColor;outline-offset:5px}
+.micro{font-family:var(--mono);font-size:var(--micro);font-weight:400;letter-spacing:.08em;line-height:1.35;text-transform:uppercase}
+
+/* ==== media: fog sky → water → karst layers + mist → haze behind copy → louvres → room shade ==== */
+.media{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none;
+  /* what shows if WebGL or JS is unavailable */
+  background:radial-gradient(55% 45% at 24% 22%,#f5f2eb 0%,rgba(245,242,235,0) 70%),linear-gradient(180deg,#d9dbd6 0%,#e9e8e2 44%,#e6e5df 47%,#d2d6d2 100%)}
+#fog{position:absolute;inset:0;width:100%;height:100%;display:block}
+.scene{position:absolute;left:calc(50% - var(--scene-x) * var(--sc));top:50%;width:calc(1600 * var(--sc));height:calc(1000 * var(--sc));translate:-50% -50%}
+.scene>*{position:absolute;left:0;top:0;width:100%;height:100%}
+.scene svg{display:block;overflow:visible}
+.rl{stroke:#f7f6f2;fill:none} .rd{stroke:#93a09c;fill:none}
+/* mist bands, pre-blurred gradients (no filter), drifting very slowly */
+.mist{left:-12%;width:124%;background-repeat:no-repeat}
+.mist--far{top:36%;height:14%;opacity:.8;
+  background:radial-gradient(30% 50% at 20% 60%,rgba(236,235,230,.95),rgba(236,235,230,0) 70%),radial-gradient(34% 45% at 62% 55%,rgba(236,235,230,.9),rgba(236,235,230,0) 72%),radial-gradient(26% 40% at 92% 62%,rgba(236,235,230,.85),rgba(236,235,230,0) 70%);
+  animation:mist-drift 46s ease-in-out infinite alternate}
+.mist--mid{top:31%;height:20%;opacity:.55;
+  background:radial-gradient(24% 34% at 34% 58%,rgba(238,237,232,.95),rgba(238,237,232,0) 72%),radial-gradient(30% 40% at 78% 50%,rgba(238,237,232,.9),rgba(238,237,232,0) 70%);
+  animation:mist-drift 62s ease-in-out -20s infinite alternate-reverse}
+.mist--water{top:42%;height:12%;
+  background:linear-gradient(180deg,rgba(232,231,226,0),rgba(232,231,226,.9) 42%,rgba(232,231,226,.6) 58%,rgba(232,231,226,.22) 78%,rgba(232,231,226,0)),radial-gradient(40% 70% at 30% 50%,rgba(240,239,235,.7),rgba(240,239,235,0) 70%);
+  animation:mist-drift 54s ease-in-out -8s infinite alternate}
+@keyframes mist-drift{from{translate:-3% 0}to{translate:3% 0}}
+/* low sun behind the mist, upper left, and its glint on the water */
+.glint{left:calc(22% - 70px);top:47%;width:140px;height:30%;
+  background:radial-gradient(50% 50% at 50% 0%,rgba(255,250,240,.55),rgba(255,250,240,0) 100%);filter:none}
+.haze{position:absolute;inset:0;
+  background:radial-gradient(62% 52% at 12% 94%,rgba(238,237,232,.82) 0%,rgba(238,237,232,.46) 46%,rgba(238,237,232,0) 76%)}
+
+/* ==== louvres ====
+   Blades are drawn as their front projection: a blade turned by angle a shows cos(a) of its width, so the turn is a
+   horizontal scale (--s = cos a) plus a flash of light across the face mid-turn. Real 3D rotation was tried and
+   dropped: Chrome composites 3D-turned layers over gradients with milky seams. */
+.louvre{position:absolute;top:0;bottom:0;left:-14px;right:-14px;display:flex}
+.blade{position:relative;flex:1 1 0;height:100%;
+  --s:0; --o:0; --s0:.982; --stg:.028s; --dim:0; --bd:calc(.06s + var(--i) * var(--stg));
+  scale:var(--s) 1;opacity:var(--o);
+  animation:blade-open 1.4s var(--ease-wipe) var(--bd) both}
+.blade::before,.blade::after{content:"";position:absolute;inset:0 .7px}
+.blade::before{
+  background:
+    linear-gradient(rgba(14,8,4,var(--dim)),rgba(14,8,4,var(--dim))),
+    linear-gradient(90deg,rgba(255,222,184,.30) 0,rgba(255,222,184,.08) 6%,rgba(255,222,184,0) 15%,rgba(0,0,0,0) 70%,rgba(10,5,2,.42) 100%),
+    linear-gradient(180deg,rgba(255,236,214,.12) 0%,rgba(0,0,0,0) 26%,rgba(0,0,0,0) 60%,rgba(10,5,2,.3) 100%),
+    var(--wood-tex),
+    linear-gradient(90deg,#4a3220,#3a2719 50%,#30200f)}
+/* light slides across the face while it turns, then leaves */
+.blade::after{opacity:0;background:linear-gradient(90deg,rgba(255,230,196,0) 10%,rgba(255,230,196,.42) 55%,rgba(255,230,196,0) 95%);
+  animation:blade-catch 1.4s var(--ease-wipe) var(--bd) both}
+/* kept blades: the screen stays half-closed on the right (desktop: the last 8 of 24) */
+.blade:nth-child(n+17){--o:1}
+.blade:nth-child(17){--s:.06} .blade:nth-child(18){--s:.15;--dim:.04} .blade:nth-child(19){--s:.27;--dim:.08} .blade:nth-child(20){--s:.41;--dim:.13}
+.blade:nth-child(21){--s:.56;--dim:.19} .blade:nth-child(22){--s:.71;--dim:.25} .blade:nth-child(23){--s:.83;--dim:.31} .blade:nth-child(24){--s:.92;--dim:.38}
+.blade:nth-child(n+17){animation:blade-open 1.4s var(--ease-wipe) var(--bd) both,blade-sway 9s ease-in-out calc(1.9s + var(--i) * .11s) infinite}
+@keyframes blade-open{0%{scale:var(--s0) 1;opacity:1}80%{opacity:1}}
+@keyframes blade-catch{0%{opacity:0}48%{opacity:1}100%{opacity:0}}
+@keyframes blade-sway{0%,100%{scale:var(--s) 1}50%{scale:calc(var(--s) * .93) 1}}
+.cm-hold .blade,.cm-hold .blade::after,.cm-hold .appear{animation-play-state:paused}
+/* room shade: the inside of the pavilion is darker than the bay (under the blades; they darken themselves via --dim) */
+.shade{position:absolute;inset:0;
+  background:linear-gradient(270deg,rgba(20,13,8,.74) 0%,rgba(20,13,8,.56) 10%,rgba(20,13,8,.26) 21%,rgba(20,13,8,.07) 29%,rgba(20,13,8,0) 35%),
+             linear-gradient(200deg,rgba(20,13,8,.3) 0%,rgba(20,13,8,0) 24%)}
+
+/* ==== page ==== */
+.page{position:relative;z-index:1;display:grid;grid-template-rows:auto 1fr;min-height:100vh;min-height:100dvh}
+
+/* header: logo | nav from the 36 % line | contact over the timber */
+.header{position:relative;z-index:50;display:grid;grid-template-columns:var(--nav-col) 1fr auto;align-items:center;padding:var(--pad-y) var(--pad-x) 0}
+.logo{justify-self:start;display:inline-flex;align-items:center;gap:12px;min-height:44px;font-size:16px;letter-spacing:-.012em;line-height:1;translate:0 -2px}
+.logo .mark{width:24px;height:22px;fill:var(--ink)}
+.logo .mark .mark-a{fill:var(--accent)}
+.logo b{font-weight:600;font-stretch:106%}
+.logo .at{font-weight:350;color:var(--muted);margin-left:.28em}
+.nav{display:flex;align-items:center;gap:30px}
+.nav a,.contact{position:relative;font-size:var(--nav);font-weight:450;letter-spacing:-.005em;line-height:1;padding:8px 0;
+  background:linear-gradient(currentColor,currentColor) 0 calc(100% - 2px)/0 1px no-repeat;transition:background-size .35s var(--ease-swift)}
+.nav a:hover,.contact:hover{background-size:100% 1px}
+.contact{color:var(--cream);display:inline-flex;align-items:center;gap:10px}
+.contact svg{width:13px;height:9px;transition:translate .3s var(--ease-swift)}
+.contact:hover svg{translate:3px 0}
+.burger{display:none}
+
+/* hero: copy bottom-left over the water, wind note bottom-right over the timber */
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:40px;padding:0 var(--pad-x) var(--bottom)}
+.copy{max-width:var(--copy-max)}
+h1{font-size:var(--h1);font-weight:320;font-stretch:104%;line-height:1.04;letter-spacing:-.042em;color:var(--ink)}
+/* Vietnamese stacks two marks above some vowels (ấ, ở): give the masks more headroom than the kit default */
+h1 .mask-line{padding:.24em .15em .16em;margin:-.24em -.15em -.16em}
+.nb{white-space:nowrap}
+.lede{max-width:var(--lede-max);margin-top:var(--lede-gap);font-size:var(--lede);line-height:1.56;letter-spacing:-.008em;color:var(--muted)}
+.actions{display:flex;align-items:center;gap:28px;margin-top:var(--act-gap)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:16px;height:var(--btn-h);font-size:var(--btn);font-weight:500;letter-spacing:-.01em;line-height:1;white-space:nowrap}
+.btn-solid{padding:1px 22px 0 24px;background:var(--ink);color:#f1eee7;transition:background .25s var(--ease-swift),color .25s var(--ease-swift)}
+.btn-solid svg{width:18px;height:10px;transition:translate .3s var(--ease-swift)}
+.btn-solid:hover{background:var(--accent);color:var(--ink)}
+.btn-solid:hover svg{translate:4px 0}
+.btn-text{padding:0 2px;color:var(--ink);background:linear-gradient(var(--line),var(--line)) 0 calc(50% + 12px)/100% 1px no-repeat,linear-gradient(var(--ink),var(--ink)) 0 calc(50% + 12px)/0 1px no-repeat;
+  transition:background-size .4s var(--ease-swift)}
+.btn-text:hover{background-size:100% 1px,100% 1px}
+
+.wind{display:flex;align-items:center;gap:14px;color:var(--cream);padding-bottom:4px;flex:none}
+.wind .rose{width:58px;height:58px;flex:none;overflow:visible}
+.rose .ring{fill:none;stroke:rgba(239,231,218,.42);stroke-width:.8}
+.rose .tick{stroke:rgba(239,231,218,.5);stroke-width:.8}
+.rose .pt{fill:rgba(239,231,218,.78)}
+.rose .pt--ne{fill:var(--accent)}
+.rose text{font-family:var(--mono);font-size:7.5px;fill:var(--cream-dim);letter-spacing:.06em}
+.wind p{display:flex;flex-direction:column;gap:3px}
+.wind .dim{color:var(--cream-dim)}
+.appear--grow{animation-name:rose-grow;--dur:1.1s}
+@keyframes rose-grow{from{opacity:0;scale:0}}
+
+/* ==== breakpoints: tokens first ==== */
+@media (min-width:1600px){:root{--h1:84px;--lede:18px;--nav:15px;--btn:15.5px;--btn-h:54px;--pad-x:64px;--pad-y:34px;--bottom:68px;--copy-max:1100px;--lede-max:540px;--micro:12.5px}}
+@media (min-width:901px) and (max-width:1279px){:root{--h1:50px;--lede:15.5px;--nav:13.5px;--pad-x:32px;--bottom:44px;--lede-max:420px}.nav{gap:22px}}
+@media (min-width:901px) and (max-height:850px){:root{--pad-y:22px;--bottom:42px;--lede-gap:18px;--act-gap:24px}}
+@media (min-width:1280px) and (max-height:850px){:root{--h1:62px}}
+@media (min-width:901px) and (max-height:720px){:root{--h1:52px;--lede:15px;--btn-h:46px;--bottom:34px;--lede-gap:16px;--act-gap:22px;--pad-y:18px}}
+@media (min-width:901px){html,body{height:100%;overflow:hidden}.page{height:100vh;height:100dvh;overflow:hidden}}
+
+@media (max-width:900px){
+  :root{--h1:40px;--lede:15.5px;--pad-x:20px;--pad-y:18px;--bottom:28px;--btn-h:50px;--scene-x:-250}
+  /* phones keep only the last three blades: a narrow timber strip down the right edge */
+  .blade{--stg:.026s}
+  .blade:nth-child(n+17){--o:0;--s:0;animation:blade-open 1.4s var(--ease-wipe) var(--bd) both}
+  .blade:nth-child(n+22){--o:1;animation:blade-open 1.4s var(--ease-wipe) var(--bd) both,blade-sway 9s ease-in-out calc(1.9s + var(--i) * .11s) infinite}
+  .blade:nth-child(22){--s:.62} .blade:nth-child(23){--s:.8} .blade:nth-child(24){--s:.92}
+  .shade{background:linear-gradient(270deg,rgba(18,11,6,.5) 0%,rgba(18,11,6,0) 14%)}
+  .haze{background:radial-gradient(120% 50% at 20% 100%,rgba(238,237,232,.8) 0%,rgba(238,237,232,.4) 50%,rgba(238,237,232,0) 80%)}
+  .header{grid-template-columns:1fr auto;gap:8px}
+  .logo{position:relative;z-index:80;font-size:15px}
+  .contact{display:none}
+  .burger{display:grid;place-content:center;gap:5px;width:44px;height:44px;position:relative;z-index:80;
+    background:var(--teak-0);border:1px solid rgba(239,231,218,.22);margin-right:calc(var(--pad-x) * -1 + 6px)}
+  .burger i{display:block;width:17px;height:1.5px;background:var(--cream);transition:transform .28s var(--ease-swift),opacity .2s}
+  .menu-open .burger i:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+  .menu-open .burger i:nth-child(2){opacity:0}
+  .menu-open .burger i:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+  .nav{position:fixed;inset:0;z-index:45;justify-self:stretch;align-self:stretch;flex-direction:column;align-items:stretch;justify-content:flex-end;gap:0;
+    padding:max(100px,calc(env(safe-area-inset-top) + 92px)) 20px max(36px,env(safe-area-inset-bottom));
+    background:rgba(231,230,224,.9);-webkit-backdrop-filter:blur(22px);backdrop-filter:blur(22px);
+    opacity:0;visibility:hidden;transition:opacity .3s var(--ease-settle),visibility .3s}
+  .menu-open .nav{opacity:1;visibility:visible}
+  .nav a{display:flex;align-items:center;height:72px;border-top:1px solid var(--line);font-size:30px;font-weight:320;font-stretch:104%;letter-spacing:-.035em;background:none}
+  .nav a:last-of-type{border-bottom:1px solid var(--line)}
+  .nav .nav-only{display:flex}
+  .nav-foot{display:block;margin-top:22px;color:var(--muted)}
+  body.menu-open{overflow:hidden}
+  .hero{flex-direction:column;align-items:flex-start;justify-content:flex-end;padding-right:calc(100vw * 3 / 24 + 12px)}
+  .louvre{left:0;right:0}
+  .wind{display:none}
+}
+@media (min-width:901px){.nav .nav-only,.nav-foot{display:none}}
+@media (max-width:560px){
+  :root{--h1:36px;--lede:15px;--lede-gap:16px;--act-gap:22px}
+  h1{letter-spacing:-.035em}
+  .actions{flex-direction:column;align-items:stretch;gap:6px;width:100%}
+  .btn-solid{justify-content:space-between}
+  .btn-text{justify-content:flex-start;align-self:flex-start;height:46px}
+}
+</style>
+</head>
+<body>
+<div class="mk-grain" aria-hidden="true" style="--grain:.07"></div>
+
+<!--
+  MEDIA SLOT. The bay is generative so the page ships complete: ShaderField (WebGL fog) for the sky, four layers of
+  seeded karst silhouettes that fade into mist at the waterline, hairline ripples, slow mist bands.
+  To use a real still or video instead, replace <canvas id="fog"> and the .scene block with:
+    <video id="fog" autoplay muted loop playsinline preload="metadata" poster="halong-suong-som.jpg"
+           aria-hidden="true" tabindex="-1"><source src="halong-suong-som.mp4" type="video/mp4"></video>
+  and keep .haze, .louvre and the room shade on top. Frame the shot so the horizon sits at 47 % of the height.
+  Generation prompt (still): "Hạ Long Bay at 6 a.m. in thick sea mist, limestone karst towers dissolving in four
+    receding layers, the nearest tower left of centre, bases lost in fog at the waterline, glassy pale water with a
+    few silver ripple lines, soft low sun hidden behind mist upper-left, horizon at 47 % of the frame, empty pale
+    water in the lower-left third for a headline, palette mist white, sage grey, slate green, no warm colours,
+    35mm, fine film grain, editorial, cinematic, photographic, no boats, no people, no text, no logo"
+  Video: same frame, locked-off camera, mist drifting slowly left between the towers, 8-second loop with an invisible cut, 24 fps.
+-->
+<div class="media" aria-hidden="true">
+  <canvas id="fog"></canvas>
+  <div class="scene">
+    <svg class="l-water" viewBox="0 0 1600 1000" preserveAspectRatio="none" focusable="false">
+      <defs>
+        <linearGradient id="g-water" gradientUnits="userSpaceOnUse" x1="0" y1="470" x2="0" y2="1000">
+          <stop offset="0" stop-color="#e3e3dd" stop-opacity="0"/><stop offset=".07" stop-color="#e0e2dd" stop-opacity=".3"/><stop offset=".22" stop-color="#d8dcd8" stop-opacity=".62"/>
+          <stop offset=".55" stop-color="#d0d6d3" stop-opacity=".78"/><stop offset="1" stop-color="#c3cbc8" stop-opacity=".9"/>
+        </linearGradient>
+        <linearGradient id="g4" gradientUnits="userSpaceOnUse" x1="0" y1="380" x2="0" y2="478"><stop offset="0" stop-color="#b9bfbc"/><stop offset=".55" stop-color="#c7ccc9"/><stop offset="1" stop-color="#e2e2dc"/></linearGradient>
+        <linearGradient id="g3" gradientUnits="userSpaceOnUse" x1="0" y1="310" x2="0" y2="478"><stop offset="0" stop-color="#9aa39f"/><stop offset=".5" stop-color="#aeb6b2"/><stop offset="1" stop-color="#e0e1db"/></linearGradient>
+        <linearGradient id="g2" gradientUnits="userSpaceOnUse" x1="0" y1="240" x2="0" y2="478"><stop offset="0" stop-color="#6f7c78"/><stop offset=".55" stop-color="#8b9793"/><stop offset="1" stop-color="#dcdeda"/></linearGradient>
+        <linearGradient id="g1" gradientUnits="userSpaceOnUse" x1="0" y1="140" x2="0" y2="480"><stop offset="0" stop-color="#3c4844"/><stop offset=".5" stop-color="#4f5c58"/><stop offset=".82" stop-color="#7f8b87"/><stop offset="1" stop-color="#d9dcd8"/></linearGradient>
+        <linearGradient id="g-refl" gradientUnits="userSpaceOnUse" x1="0" y1="470" x2="0" y2="700"><stop offset="0" stop-color="#fff" stop-opacity=".42"/><stop offset=".55" stop-color="#fff" stop-opacity=".12"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+        <mask id="m-refl" maskUnits="userSpaceOnUse" x="-300" y="470" width="2200" height="400"><rect x="-300" y="470" width="2200" height="400" fill="url(#g-refl)"/></mask>
+        <filter id="f-refl" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="1.2 3.2"/></filter>
+        <filter id="f-far" x="-5%" y="-20%" width="110%" height="140%"><feGaussianBlur stdDeviation="1.6"/></filter>
+        <filter id="f-mid" x="-5%" y="-20%" width="110%" height="140%"><feGaussianBlur stdDeviation=".8"/></filter>
+        <!-- mottled rock and canopy inside the nearest towers -->
+        <filter id="f-tex" x="0" y="0" width="100%" height="100%">
+          <feTurbulence type="fractalNoise" baseFrequency=".011 .028" numOctaves="4" seed="4"/>
+          <feColorMatrix values="0 0 0 0 .13  0 0 0 0 .17  0 0 0 0 .15  1.5 0 0 0 -.62"/>
+        </filter>
+        <clipPath id="c-k1"><use href="#k1"/></clipPath>
+        <path id="k4" d="M-160.0 478.0L-160.0 399.2L-157.5 397.7L-155.0 397.8L-152.5 397.4L-150.0 397.0L-147.5 395.3L-145.0 396.0L-142.5 397.0L-140.0 397.0L-137.5 398.7L-135.0 399.2L-132.5 400.3L-130.0 401.9L-127.5 401.6L-125.0 401.9L-122.5 402.3L-120.0 402.2L-117.5 402.8L-115.0 404.4L-112.5 405.6L-110.0 406.0L-107.5 407.6L-105.0 407.6L-102.5 409.9L-100.0 411.2L-97.5 412.1L-95.0 413.4L-92.5 415.6L-90.0 418.5L-87.5 415.8L-85.0 414.4L-82.5 414.2L-80.0 413.4L-77.5 414.6L-75.0 415.5L-72.5 417.5L-70.0 419.4L-67.5 421.2L-65.0 424.8L-62.5 428.4L-60.0 433.2L-57.5 439.5L-55.0 445.8L-52.5 444.8L-50.0 443.6L-47.5 442.6L-45.0 441.8L-42.5 440.6L-40.0 439.5L-37.5 438.7L-35.0 438.8L-32.5 436.6L-30.0 436.8L-27.5 436.5L-25.0 436.3L-22.5 436.7L-20.0 436.7L-17.5 436.4L-15.0 437.1L-12.5 437.9L-10.0 438.3L-7.5 439.0L-5.0 438.7L-2.5 439.8L0.0 439.0L2.5 439.9L5.0 439.7L7.5 439.3L10.0 439.8L12.5 440.1L15.0 440.5L17.5 440.9L20.0 441.7L22.5 443.1L25.0 444.3L27.5 445.6L30.0 447.0L32.5 449.2L35.0 452.5L37.5 457.8L40.0 461.3L42.5 460.9L45.0 460.8L47.5 460.7L50.0 442.2L52.5 433.6L55.0 428.5L57.5 424.5L60.0 421.5L62.5 418.7L65.0 417.7L67.5 417.7L70.0 417.2L72.5 416.7L75.0 417.0L77.5 417.0L80.0 417.4L82.5 415.9L85.0 415.6L87.5 415.1L90.0 414.9L92.5 415.6L95.0 416.8L97.5 418.5L100.0 418.5L102.5 419.8L105.0 420.7L107.5 418.7L110.0 418.8L112.5 419.1L115.0 419.3L117.5 418.6L120.0 419.0L122.5 419.7L125.0 419.4L127.5 419.8L130.0 421.0L132.5 421.3L135.0 421.5L137.5 420.5L140.0 420.0L142.5 419.8L145.0 420.5L147.5 420.3L150.0 420.8L152.5 421.8L155.0 423.7L157.5 425.0L160.0 427.6L162.5 431.4L165.0 436.7L167.5 427.5L170.0 419.1L172.5 414.7L175.0 413.4L177.5 412.5L180.0 410.9L182.5 410.5L185.0 411.4L187.5 411.3L190.0 412.1L192.5 411.1L195.0 410.3L197.5 410.8L200.0 411.7L202.5 412.6L205.0 412.5L207.5 414.7L210.0 415.1L212.5 415.2L215.0 415.8L217.5 415.7L220.0 416.7L222.5 417.1L225.0 416.8L227.5 416.1L230.0 416.8L232.5 415.6L235.0 415.9L237.5 415.7L240.0 416.4L242.5 415.9L245.0 414.6L247.5 414.2L250.0 413.2L252.5 413.2L255.0 414.0L257.5 413.6L260.0 413.9L262.5 415.3L265.0 416.4L267.5 417.3L270.0 418.3L272.5 420.5L275.0 421.9L277.5 424.2L280.0 427.2L282.5 430.9L285.0 432.4L287.5 431.7L290.0 432.3L292.5 431.8L295.0 430.6L297.5 430.4L300.0 430.9L302.5 431.6L305.0 431.4L307.5 431.4L310.0 431.2L312.5 431.6L315.0 432.0L317.5 432.3L320.0 433.5L322.5 433.0L325.0 433.6L327.5 434.6L330.0 436.1L332.5 436.8L335.0 438.1L337.5 433.5L340.0 429.1L342.5 426.4L345.0 424.4L347.5 422.9L350.0 421.2L352.5 420.0L355.0 417.9L357.5 417.5L360.0 417.3L362.5 418.7L365.0 419.6L367.5 421.7L370.0 422.9L372.5 424.8L375.0 427.9L377.5 431.6L380.0 436.3L382.5 443.8L385.0 453.1L387.5 441.4L390.0 435.5L392.5 431.9L395.0 428.8L397.5 427.0L400.0 425.4L402.5 424.5L405.0 423.7L407.5 423.4L410.0 422.4L412.5 422.2L415.0 421.2L417.5 421.3L420.0 420.1L422.5 419.4L425.0 419.6L427.5 418.8L430.0 419.2L432.5 419.5L435.0 419.1L437.5 418.2L440.0 417.9L442.5 417.8L445.0 418.3L447.5 418.3L450.0 417.9L452.5 417.3L455.0 417.2L457.5 417.5L460.0 416.8L462.5 416.9L465.0 417.1L467.5 417.5L470.0 417.8L472.5 417.9L475.0 418.7L477.5 418.6L480.0 420.2L482.5 421.9L485.0 422.4L487.5 423.6L490.0 426.3L492.5 428.3L495.0 429.8L497.5 427.5L500.0 426.4L502.5 424.2L505.0 422.3L507.5 421.4L510.0 420.2L512.5 418.7L515.0 418.4L517.5 418.7L520.0 418.3L522.5 417.6L525.0 418.1L527.5 419.0L530.0 418.4L532.5 418.5L535.0 419.1L537.5 418.8L540.0 417.1L542.5 418.2L545.0 419.1L547.5 419.8L550.0 420.0L552.5 419.9L555.0 419.8L557.5 420.3L560.0 422.1L562.5 423.8L565.0 425.6L567.5 428.6L570.0 433.1L572.5 439.1L575.0 448.6L577.5 421.0L580.0 409.6L582.5 403.6L585.0 401.8L587.5 399.5L590.0 397.5L592.5 396.6L595.0 395.7L597.5 395.7L600.0 396.0L602.5 396.5L605.0 397.7L607.5 398.8L610.0 400.8L612.5 403.0L615.0 405.3L617.5 409.3L620.0 415.3L622.5 428.1L625.0 446.3L627.5 445.7L630.0 446.2L632.5 446.1L635.0 446.7L637.5 446.1L640.0 446.6L642.5 446.4L645.0 446.6L647.5 446.4L650.0 446.6L652.5 446.2L655.0 446.1L657.5 445.0L660.0 445.6L662.5 445.1L665.0 445.3L667.5 445.3L670.0 445.9L672.5 446.3L675.0 447.0L677.5 446.9L680.0 446.0L682.5 446.0L685.0 446.6L687.5 447.3L690.0 447.5L692.5 447.9L695.0 445.5L697.5 441.5L700.0 438.9L702.5 437.2L705.0 436.3L707.5 434.6L710.0 433.2L712.5 432.6L715.0 432.7L717.5 431.4L720.0 430.6L722.5 430.5L725.0 430.4L727.5 429.9L730.0 430.6L732.5 431.5L735.0 432.4L737.5 433.4L740.0 433.9L742.5 433.6L745.0 431.3L747.5 426.2L750.0 423.7L752.5 421.0L755.0 420.4L757.5 418.9L760.0 417.4L762.5 416.5L765.0 417.2L767.5 416.9L770.0 416.2L772.5 416.0L775.0 415.8L777.5 415.7L780.0 417.0L782.5 417.9L785.0 419.5L787.5 419.9L790.0 419.9L792.5 420.3L795.0 422.3L797.5 423.7L800.0 423.5L802.5 422.9L805.0 421.6L807.5 421.0L810.0 420.6L812.5 420.4L815.0 421.1L817.5 421.5L820.0 421.2L822.5 421.6L825.0 422.1L827.5 421.6L830.0 422.0L832.5 421.7L835.0 422.7L837.5 422.7L840.0 424.7L842.5 427.1L845.0 428.3L847.5 429.7L850.0 431.1L852.5 431.9L855.0 434.7L857.5 437.7L860.0 443.3L862.5 445.2L865.0 447.1L867.5 450.0L870.0 454.5L872.5 455.1L875.0 453.5L877.5 433.3L880.0 418.1L882.5 411.2L885.0 406.4L887.5 402.0L890.0 399.5L892.5 398.1L895.0 396.6L897.5 395.6L900.0 395.2L902.5 394.9L905.0 395.3L907.5 397.4L910.0 396.9L912.5 397.5L915.0 398.4L917.5 400.3L920.0 402.2L922.5 404.4L925.0 406.8L927.5 410.9L930.0 415.6L932.5 417.2L935.0 411.3L937.5 406.2L940.0 403.3L942.5 403.3L945.0 402.2L947.5 401.1L950.0 401.2L952.5 400.3L955.0 400.5L957.5 400.2L960.0 400.5L962.5 400.9L965.0 401.8L967.5 404.0L970.0 407.6L972.5 410.8L975.0 415.2L977.5 420.1L980.0 430.1L982.5 455.8L985.0 459.7L987.5 460.8L990.0 462.7L992.5 462.4L995.0 462.3L997.5 462.2L1000.0 460.9L1002.5 460.6L1005.0 454.4L1007.5 445.7L1010.0 441.9L1012.5 438.3L1015.0 436.6L1017.5 434.5L1020.0 432.5L1022.5 430.2L1025.0 428.6L1027.5 427.1L1030.0 425.4L1032.5 424.8L1035.0 423.9L1037.5 424.1L1040.0 423.6L1042.5 424.6L1045.0 423.6L1047.5 422.6L1050.0 421.4L1052.5 420.4L1055.0 420.2L1057.5 419.3L1060.0 418.6L1062.5 418.1L1065.0 418.8L1067.5 419.8L1070.0 419.7L1072.5 418.6L1075.0 420.0L1077.5 419.5L1080.0 420.1L1082.5 419.9L1085.0 420.5L1087.5 421.9L1090.0 422.7L1092.5 422.7L1095.0 423.6L1097.5 424.5L1100.0 426.8L1102.5 428.5L1105.0 430.4L1107.5 433.3L1110.0 437.1L1112.5 441.5L1115.0 450.6L1117.5 461.6L1120.0 463.1L1122.5 463.5L1125.0 463.7L1127.5 464.2L1130.0 465.1L1132.5 464.7L1135.0 464.2L1137.5 444.1L1140.0 438.3L1142.5 435.0L1145.0 432.8L1147.5 431.3L1150.0 429.9L1152.5 429.8L1155.0 429.3L1157.5 428.5L1160.0 428.1L1162.5 429.5L1165.0 429.9L1167.5 430.5L1170.0 431.0L1172.5 430.9L1175.0 430.9L1177.5 430.2L1180.0 430.5L1182.5 430.3L1185.0 429.6L1187.5 431.4L1190.0 432.2L1192.5 434.4L1195.0 437.6L1197.5 443.4L1200.0 456.9L1202.5 452.4L1205.0 443.5L1207.5 440.7L1210.0 440.4L1212.5 440.1L1215.0 439.7L1217.5 440.1L1220.0 438.2L1222.5 437.6L1225.0 436.8L1227.5 435.9L1230.0 434.8L1232.5 433.6L1235.0 433.3L1237.5 433.5L1240.0 432.5L1242.5 433.1L1245.0 433.1L1247.5 434.0L1250.0 434.1L1252.5 434.9L1255.0 435.4L1257.5 436.4L1260.0 436.8L1262.5 438.7L1265.0 442.5L1267.5 448.1L1270.0 456.7L1272.5 462.5L1275.0 463.2L1277.5 463.9L1280.0 465.1L1282.5 466.1L1285.0 467.7L1287.5 467.0L1290.0 466.8L1292.5 466.9L1295.0 467.5L1297.5 467.0L1300.0 466.5L1302.5 466.4L1305.0 465.7L1307.5 459.3L1310.0 456.9L1312.5 454.6L1315.0 453.1L1317.5 452.6L1320.0 451.8L1322.5 452.2L1325.0 451.7L1327.5 451.6L1330.0 451.7L1332.5 451.6L1335.0 451.3L1337.5 450.6L1340.0 450.7L1342.5 450.9L1345.0 451.3L1347.5 450.8L1350.0 450.6L1352.5 451.3L1355.0 451.9L1357.5 452.3L1360.0 452.2L1362.5 451.9L1365.0 451.6L1367.5 451.6L1370.0 451.7L1372.5 452.0L1375.0 452.5L1377.5 452.9L1380.0 452.5L1382.5 450.6L1385.0 449.5L1387.5 448.3L1390.0 447.8L1392.5 446.6L1395.0 446.3L1397.5 446.3L1400.0 445.1L1402.5 444.6L1405.0 444.2L1407.5 445.0L1410.0 445.5L1412.5 445.7L1415.0 445.3L1417.5 444.7L1420.0 444.5L1422.5 444.5L1425.0 444.1L1427.5 443.8L1430.0 444.4L1432.5 444.1L1435.0 445.3L1437.5 444.2L1440.0 443.1L1442.5 442.0L1445.0 441.7L1447.5 441.9L1450.0 441.2L1452.5 441.7L1455.0 441.7L1457.5 441.4L1460.0 441.2L1462.5 441.5L1465.0 440.7L1467.5 440.5L1470.0 440.8L1472.5 440.4L1475.0 441.1L1477.5 441.2L1480.0 441.7L1482.5 443.9L1485.0 444.6L1487.5 445.6L1490.0 446.9L1492.5 448.1L1495.0 450.3L1497.5 453.2L1500.0 456.6L1502.5 463.9L1505.0 464.3L1507.5 465.0L1510.0 466.2L1512.5 466.8L1515.0 467.0L1517.5 468.1L1520.0 468.0L1522.5 466.7L1525.0 463.8L1527.5 461.8L1530.0 451.3L1532.5 432.4L1535.0 426.4L1537.5 422.6L1540.0 419.8L1542.5 417.5L1545.0 415.7L1547.5 414.4L1550.0 414.2L1552.5 414.1L1555.0 413.9L1557.5 414.3L1560.0 413.9L1562.5 413.5L1565.0 413.5L1567.5 414.0L1570.0 414.2L1572.5 415.3L1575.0 416.2L1577.5 416.3L1580.0 417.7L1582.5 420.6L1585.0 425.2L1587.5 430.8L1590.0 440.4L1592.5 456.9L1595.0 457.9L1597.5 458.8L1600.0 460.1L1602.5 461.8L1605.0 462.8L1607.5 464.5L1610.0 466.0L1612.5 468.4L1615.0 470.0L1617.5 470.0L1620.0 470.0L1622.5 469.6L1625.0 468.9L1627.5 468.1L1630.0 467.5L1632.5 466.8L1635.0 466.1L1637.5 456.4L1640.0 452.7L1642.5 451.3L1645.0 450.5L1647.5 448.5L1650.0 447.7L1652.5 447.1L1655.0 446.8L1657.5 446.6L1660.0 445.5L1662.5 444.7L1665.0 444.5L1667.5 444.8L1670.0 444.2L1672.5 444.3L1675.0 445.0L1677.5 445.6L1680.0 446.6L1682.5 442.9L1685.0 435.4L1687.5 430.4L1690.0 428.0L1692.5 425.0L1695.0 422.1L1697.5 419.9L1700.0 418.2L1702.5 416.4L1705.0 416.2L1707.5 416.0L1710.0 415.3L1712.5 415.3L1715.0 415.5L1717.5 415.0L1720.0 414.5L1722.5 413.8L1725.0 413.0L1727.5 412.1L1730.0 411.4L1732.5 411.8L1735.0 411.7L1737.5 411.1L1740.0 410.7L1742.5 411.2L1745.0 411.5L1747.5 412.1L1750.0 412.1L1752.5 412.1L1755.0 413.0L1757.5 413.5L1760.0 413.5L1760.0 478.0 Z"/>
+        <path id="k3" d="M-160.0 478.0L-160.0 470.0L-157.5 470.0L-155.0 470.0L-152.5 470.0L-150.0 470.0L-147.5 470.0L-145.0 470.0L-142.5 470.0L-140.0 470.0L-137.5 470.0L-135.0 469.5L-132.5 466.3L-130.0 465.7L-127.5 463.8L-125.0 462.6L-122.5 461.0L-120.0 460.5L-117.5 459.8L-115.0 458.1L-112.5 456.0L-110.0 455.1L-107.5 429.6L-105.0 417.7L-102.5 407.7L-100.0 400.7L-97.5 396.9L-95.0 393.6L-92.5 389.5L-90.0 386.9L-87.5 384.3L-85.0 383.1L-82.5 381.7L-80.0 378.9L-77.5 376.2L-75.0 375.5L-72.5 371.5L-70.0 370.9L-67.5 369.9L-65.0 368.2L-62.5 363.2L-60.0 361.0L-57.5 360.3L-55.0 358.0L-52.5 358.0L-50.0 357.8L-47.5 358.7L-45.0 358.6L-42.5 356.6L-40.0 354.1L-37.5 353.6L-35.0 354.6L-32.5 355.6L-30.0 357.0L-27.5 357.5L-25.0 357.7L-22.5 357.7L-20.0 357.4L-17.5 358.7L-15.0 357.2L-12.5 357.2L-10.0 359.3L-7.5 363.2L-5.0 365.5L-2.5 366.2L0.0 367.5L2.5 369.8L5.0 370.9L7.5 372.3L10.0 374.8L12.5 375.7L15.0 376.3L17.5 376.1L20.0 379.5L22.5 382.0L25.0 387.4L27.5 395.4L30.0 408.6L32.5 434.5L35.0 436.0L37.5 437.8L40.0 439.3L42.5 442.4L45.0 445.2L47.5 446.9L50.0 449.9L52.5 451.8L55.0 452.9L57.5 455.5L60.0 455.6L62.5 456.6L65.0 458.7L67.5 460.4L70.0 462.5L72.5 466.0L75.0 469.6L77.5 470.0L80.0 470.0L82.5 470.0L85.0 467.4L87.5 464.8L90.0 461.1L92.5 459.4L95.0 457.8L97.5 455.8L100.0 451.6L102.5 423.3L105.0 411.6L107.5 405.6L110.0 400.1L112.5 396.0L115.0 393.1L117.5 389.1L120.0 386.6L122.5 383.9L125.0 382.1L127.5 380.5L130.0 379.2L132.5 379.4L135.0 380.0L137.5 382.4L140.0 383.5L142.5 385.8L145.0 388.7L147.5 391.4L150.0 392.9L152.5 393.3L155.0 393.9L157.5 394.4L160.0 393.8L162.5 394.8L165.0 391.7L167.5 389.4L170.0 386.9L172.5 386.7L175.0 387.3L177.5 389.0L180.0 391.4L182.5 396.5L185.0 406.0L187.5 449.7L190.0 451.0L192.5 452.2L195.0 453.3L197.5 453.5L200.0 454.8L202.5 457.7L205.0 460.0L207.5 461.6L210.0 463.9L212.5 465.7L215.0 468.6L217.5 470.0L220.0 470.0L222.5 470.0L225.0 470.0L227.5 470.0L230.0 470.0L232.5 470.0L235.0 470.0L237.5 470.0L240.0 466.3L242.5 463.1L245.0 461.4L247.5 460.0L250.0 458.8L252.5 458.0L255.0 455.5L257.5 454.7L260.0 452.5L262.5 450.9L265.0 447.7L267.5 445.5L270.0 382.7L272.5 368.4L275.0 360.6L277.5 352.6L280.0 349.3L282.5 346.3L285.0 344.4L287.5 341.6L290.0 338.4L292.5 335.6L295.0 335.4L297.5 332.9L300.0 331.6L302.5 333.1L305.0 330.7L307.5 330.8L310.0 331.8L312.5 331.7L315.0 330.5L317.5 328.7L320.0 330.4L322.5 332.5L325.0 334.2L327.5 332.7L330.0 330.5L332.5 330.7L335.0 332.3L337.5 334.7L340.0 336.7L342.5 339.7L345.0 339.7L347.5 340.1L350.0 340.4L352.5 341.4L355.0 344.2L357.5 349.7L360.0 354.1L362.5 362.0L365.0 371.5L367.5 381.6L370.0 397.0L372.5 434.7L375.0 437.0L377.5 440.2L380.0 443.8L382.5 447.1L385.0 449.7L387.5 453.2L390.0 457.2L392.5 461.0L395.0 464.8L397.5 469.7L400.0 470.0L402.5 470.0L405.0 470.0L407.5 470.0L410.0 470.0L412.5 470.0L415.0 470.0L417.5 470.0L420.0 470.0L422.5 470.0L425.0 470.0L427.5 470.0L430.0 470.0L432.5 470.0L435.0 470.0L437.5 470.0L440.0 470.0L442.5 470.0L445.0 470.0L447.5 470.0L450.0 470.0L452.5 470.0L455.0 470.0L457.5 470.0L460.0 470.0L462.5 470.0L465.0 470.0L467.5 470.0L470.0 470.0L472.5 470.0L475.0 470.0L477.5 470.0L480.0 470.0L482.5 470.0L485.0 470.0L487.5 470.0L490.0 470.0L492.5 470.0L495.0 470.0L497.5 470.0L500.0 470.0L502.5 470.0L505.0 470.0L507.5 470.0L510.0 470.0L512.5 470.0L515.0 470.0L517.5 470.0L520.0 470.0L522.5 470.0L525.0 470.0L527.5 470.0L530.0 470.0L532.5 470.0L535.0 470.0L537.5 470.0L540.0 470.0L542.5 470.0L545.0 470.0L547.5 470.0L550.0 470.0L552.5 470.0L555.0 470.0L557.5 470.0L560.0 470.0L562.5 470.0L565.0 470.0L567.5 470.0L570.0 470.0L572.5 470.0L575.0 470.0L577.5 470.0L580.0 470.0L582.5 470.0L585.0 470.0L587.5 470.0L590.0 470.0L592.5 470.0L595.0 470.0L597.5 470.0L600.0 470.0L602.5 470.0L605.0 470.0L607.5 470.0L610.0 470.0L612.5 470.0L615.0 470.0L617.5 470.0L620.0 470.0L622.5 470.0L625.0 470.0L627.5 470.0L630.0 470.0L632.5 470.0L635.0 470.0L637.5 470.0L640.0 470.0L642.5 470.0L645.0 470.0L647.5 470.0L650.0 470.0L652.5 470.0L655.0 470.0L657.5 470.0L660.0 470.0L662.5 470.0L665.0 470.0L667.5 470.0L670.0 470.0L672.5 470.0L675.0 470.0L677.5 470.0L680.0 470.0L682.5 470.0L685.0 470.0L687.5 470.0L690.0 470.0L692.5 470.0L695.0 470.0L697.5 470.0L700.0 470.0L702.5 470.0L705.0 470.0L707.5 470.0L710.0 470.0L712.5 470.0L715.0 470.0L717.5 470.0L720.0 470.0L722.5 470.0L725.0 470.0L727.5 470.0L730.0 470.0L732.5 470.0L735.0 470.0L737.5 470.0L740.0 470.0L742.5 470.0L745.0 470.0L747.5 470.0L750.0 470.0L752.5 470.0L755.0 470.0L757.5 470.0L760.0 470.0L762.5 470.0L765.0 470.0L767.5 470.0L770.0 470.0L772.5 470.0L775.0 470.0L777.5 470.0L780.0 470.0L782.5 470.0L785.0 470.0L787.5 470.0L790.0 470.0L792.5 470.0L795.0 470.0L797.5 470.0L800.0 470.0L802.5 470.0L805.0 470.0L807.5 470.0L810.0 470.0L812.5 470.0L815.0 470.0L817.5 470.0L820.0 470.0L822.5 470.0L825.0 470.0L827.5 470.0L830.0 470.0L832.5 470.0L835.0 469.7L837.5 467.2L840.0 463.3L842.5 461.2L845.0 458.2L847.5 455.6L850.0 453.1L852.5 450.9L855.0 448.0L857.5 444.5L860.0 440.9L862.5 437.8L865.0 402.5L867.5 385.2L870.0 375.2L872.5 367.1L875.0 362.5L877.5 358.5L880.0 358.4L882.5 357.9L885.0 355.0L887.5 352.4L890.0 351.1L892.5 348.1L895.0 346.7L897.5 345.9L900.0 346.0L902.5 345.6L905.0 346.0L907.5 346.7L910.0 346.1L912.5 347.2L915.0 348.8L917.5 348.4L920.0 350.4L922.5 351.5L925.0 355.1L927.5 354.2L930.0 354.6L932.5 355.8L935.0 358.7L937.5 358.4L940.0 359.0L942.5 363.6L945.0 366.6L947.5 371.2L950.0 379.6L952.5 401.9L955.0 451.0L957.5 451.8L960.0 451.8L962.5 453.1L965.0 455.3L967.5 452.6L970.0 450.2L972.5 446.9L975.0 444.1L977.5 440.5L980.0 426.7L982.5 412.9L985.0 405.1L987.5 398.6L990.0 392.5L992.5 387.9L995.0 383.1L997.5 378.9L1000.0 376.7L1002.5 373.6L1005.0 370.3L1007.5 367.9L1010.0 369.6L1012.5 370.9L1015.0 372.0L1017.5 373.7L1020.0 373.2L1022.5 374.0L1025.0 375.0L1027.5 377.3L1030.0 379.4L1032.5 380.9L1035.0 384.2L1037.5 387.3L1040.0 393.4L1042.5 398.2L1045.0 404.1L1047.5 413.3L1050.0 426.8L1052.5 450.0L1055.0 453.6L1057.5 456.5L1060.0 461.2L1062.5 464.2L1065.0 468.1L1067.5 470.0L1070.0 470.0L1072.5 470.0L1075.0 470.0L1077.5 470.0L1080.0 470.0L1082.5 470.0L1085.0 470.0L1087.5 470.0L1090.0 470.0L1092.5 470.0L1095.0 470.0L1097.5 470.0L1100.0 470.0L1102.5 470.0L1105.0 470.0L1107.5 468.9L1110.0 465.2L1112.5 460.0L1115.0 457.4L1117.5 453.9L1120.0 450.6L1122.5 447.7L1125.0 444.9L1127.5 442.0L1130.0 437.9L1132.5 436.3L1135.0 433.2L1137.5 430.4L1140.0 391.6L1142.5 382.4L1145.0 374.1L1147.5 354.7L1150.0 345.0L1152.5 339.2L1155.0 336.9L1157.5 334.2L1160.0 333.6L1162.5 332.9L1165.0 333.5L1167.5 332.3L1170.0 332.1L1172.5 329.7L1175.0 327.2L1177.5 323.5L1180.0 319.8L1182.5 316.3L1185.0 313.0L1187.5 308.9L1190.0 307.5L1192.5 306.1L1195.0 306.8L1197.5 304.7L1200.0 305.2L1202.5 310.0L1205.0 313.0L1207.5 317.1L1210.0 323.6L1212.5 325.0L1215.0 329.4L1217.5 331.6L1220.0 334.7L1222.5 336.7L1225.0 337.9L1227.5 341.2L1230.0 343.4L1232.5 347.5L1235.0 349.1L1237.5 351.2L1240.0 353.8L1242.5 359.6L1245.0 365.5L1247.5 372.7L1250.0 381.3L1252.5 390.3L1255.0 404.5L1257.5 425.6L1260.0 441.4L1262.5 444.7L1265.0 447.7L1267.5 451.0L1270.0 454.2L1272.5 456.9L1275.0 459.5L1277.5 460.8L1280.0 462.9L1282.5 465.3L1285.0 469.7L1287.5 470.0L1290.0 470.0L1292.5 469.0L1295.0 467.1L1297.5 465.0L1300.0 462.3L1302.5 461.2L1305.0 459.7L1307.5 458.0L1310.0 456.5L1312.5 454.6L1315.0 452.5L1317.5 450.2L1320.0 447.8L1322.5 426.7L1325.0 410.9L1327.5 402.2L1330.0 396.8L1332.5 391.0L1335.0 388.5L1337.5 384.3L1340.0 382.0L1342.5 379.3L1345.0 378.8L1347.5 376.8L1350.0 376.7L1352.5 376.4L1355.0 375.3L1357.5 373.1L1360.0 372.8L1362.5 372.3L1365.0 373.1L1367.5 372.3L1370.0 373.9L1372.5 373.6L1375.0 374.4L1377.5 374.4L1380.0 374.8L1382.5 376.8L1385.0 376.7L1387.5 376.4L1390.0 377.3L1392.5 380.5L1395.0 382.6L1397.5 385.9L1400.0 391.1L1402.5 398.4L1405.0 405.8L1407.5 416.7L1410.0 443.4L1412.5 449.2L1415.0 453.2L1417.5 456.9L1420.0 460.7L1422.5 462.9L1425.0 466.0L1427.5 468.4L1430.0 466.7L1432.5 465.1L1435.0 463.3L1437.5 461.5L1440.0 458.2L1442.5 455.8L1445.0 452.8L1447.5 451.0L1450.0 449.5L1452.5 448.8L1455.0 447.9L1457.5 448.6L1460.0 430.0L1462.5 406.7L1465.0 394.1L1467.5 384.6L1470.0 377.6L1472.5 373.8L1475.0 368.7L1477.5 365.1L1480.0 361.9L1482.5 359.4L1485.0 356.9L1487.5 354.0L1490.0 352.1L1492.5 352.4L1495.0 352.8L1497.5 352.6L1500.0 352.2L1502.5 351.2L1505.0 351.5L1507.5 353.0L1510.0 353.7L1512.5 353.6L1515.0 352.1L1517.5 349.3L1520.0 345.8L1522.5 345.7L1525.0 343.9L1527.5 343.4L1530.0 341.0L1532.5 340.0L1535.0 340.8L1537.5 342.9L1540.0 341.5L1542.5 341.9L1545.0 344.4L1547.5 345.6L1550.0 346.2L1552.5 346.0L1555.0 347.1L1557.5 349.1L1560.0 351.4L1562.5 355.3L1565.0 361.4L1567.5 368.1L1570.0 381.1L1572.5 446.9L1575.0 449.0L1577.5 450.9L1580.0 451.9L1582.5 453.8L1585.0 455.4L1587.5 456.8L1590.0 458.7L1592.5 460.2L1595.0 461.2L1597.5 464.5L1600.0 462.9L1602.5 461.1L1605.0 458.1L1607.5 454.8L1610.0 452.0L1612.5 449.8L1615.0 448.8L1617.5 447.7L1620.0 447.7L1622.5 447.9L1625.0 429.9L1627.5 419.0L1630.0 413.0L1632.5 408.7L1635.0 405.1L1637.5 401.1L1640.0 399.2L1642.5 396.9L1645.0 393.8L1647.5 390.5L1650.0 387.8L1652.5 385.2L1655.0 381.6L1657.5 380.3L1660.0 378.8L1662.5 377.4L1665.0 376.8L1667.5 377.5L1670.0 378.3L1672.5 379.8L1675.0 380.7L1677.5 384.4L1680.0 385.3L1682.5 387.7L1685.0 389.9L1687.5 390.5L1690.0 391.8L1692.5 392.4L1695.0 393.9L1697.5 397.0L1700.0 400.5L1702.5 402.8L1705.0 406.0L1707.5 409.6L1710.0 414.2L1712.5 420.8L1715.0 429.9L1717.5 447.4L1720.0 453.3L1722.5 456.3L1725.0 458.6L1727.5 460.2L1730.0 462.8L1732.5 465.4L1735.0 465.6L1737.5 467.3L1740.0 470.0L1742.5 470.0L1745.0 470.0L1747.5 470.0L1750.0 470.0L1752.5 470.0L1755.0 470.0L1757.5 470.0L1760.0 470.0L1760.0 478.0 Z"/>
+        <path id="k2" d="M-160.0 478.0L-160.0 470.0L-157.5 470.0L-155.0 470.0L-152.5 470.0L-150.0 470.0L-147.5 466.2L-145.0 463.3L-142.5 459.4L-140.0 456.8L-137.5 453.2L-135.0 450.1L-132.5 447.0L-130.0 445.5L-127.5 445.0L-125.0 444.6L-122.5 445.8L-120.0 444.0L-117.5 442.7L-115.0 441.2L-112.5 418.9L-110.0 378.0L-107.5 363.4L-105.0 351.7L-102.5 341.3L-100.0 336.5L-97.5 330.3L-95.0 326.7L-92.5 321.8L-90.0 320.1L-87.5 316.9L-85.0 315.2L-82.5 316.3L-80.0 311.4L-77.5 307.8L-75.0 304.0L-72.5 301.5L-70.0 298.5L-67.5 294.2L-65.0 287.6L-62.5 284.0L-60.0 278.3L-57.5 273.7L-55.0 274.6L-52.5 272.8L-50.0 269.0L-47.5 265.9L-45.0 265.0L-42.5 266.1L-40.0 265.5L-37.5 263.7L-35.0 264.3L-32.5 265.8L-30.0 265.2L-27.5 266.5L-25.0 266.8L-22.5 267.7L-20.0 269.6L-17.5 269.1L-15.0 267.1L-12.5 267.6L-10.0 266.1L-7.5 267.1L-5.0 269.1L-2.5 270.5L0.0 275.5L2.5 273.5L5.0 274.4L7.5 272.4L10.0 270.8L12.5 269.4L15.0 269.1L17.5 266.6L20.0 263.9L22.5 262.0L25.0 258.9L27.5 262.8L30.0 270.0L32.5 275.5L35.0 285.9L37.5 291.5L40.0 298.9L42.5 302.9L45.0 310.6L47.5 317.7L50.0 320.5L52.5 323.2L55.0 329.7L57.5 338.7L60.0 349.8L62.5 375.4L65.0 424.7L67.5 424.6L70.0 426.2L72.5 427.3L75.0 426.5L77.5 427.4L80.0 427.8L82.5 430.1L85.0 432.3L87.5 434.7L90.0 437.2L92.5 440.9L95.0 443.7L97.5 444.9L100.0 447.9L102.5 450.3L105.0 451.7L107.5 454.2L110.0 456.8L112.5 459.7L115.0 462.9L117.5 465.6L120.0 468.0L122.5 470.0L125.0 470.0L127.5 470.0L130.0 470.0L132.5 470.0L135.0 470.0L137.5 470.0L140.0 470.0L142.5 470.0L145.0 470.0L147.5 470.0L150.0 470.0L152.5 470.0L155.0 470.0L157.5 470.0L160.0 470.0L162.5 470.0L165.0 470.0L167.5 470.0L170.0 470.0L172.5 470.0L175.0 470.0L177.5 470.0L180.0 470.0L182.5 470.0L185.0 470.0L187.5 470.0L190.0 470.0L192.5 470.0L195.0 470.0L197.5 470.0L200.0 470.0L202.5 470.0L205.0 470.0L207.5 470.0L210.0 470.0L212.5 470.0L215.0 470.0L217.5 470.0L220.0 470.0L222.5 470.0L225.0 470.0L227.5 470.0L230.0 470.0L232.5 470.0L235.0 470.0L237.5 470.0L240.0 470.0L242.5 470.0L245.0 470.0L247.5 470.0L250.0 470.0L252.5 470.0L255.0 470.0L257.5 470.0L260.0 470.0L262.5 470.0L265.0 470.0L267.5 470.0L270.0 470.0L272.5 470.0L275.0 470.0L277.5 470.0L280.0 470.0L282.5 470.0L285.0 470.0L287.5 470.0L290.0 470.0L292.5 470.0L295.0 470.0L297.5 470.0L300.0 470.0L302.5 470.0L305.0 470.0L307.5 470.0L310.0 470.0L312.5 470.0L315.0 470.0L317.5 470.0L320.0 470.0L322.5 470.0L325.0 470.0L327.5 470.0L330.0 470.0L332.5 470.0L335.0 470.0L337.5 470.0L340.0 470.0L342.5 470.0L345.0 470.0L347.5 470.0L350.0 470.0L352.5 470.0L355.0 470.0L357.5 470.0L360.0 470.0L362.5 470.0L365.0 470.0L367.5 470.0L370.0 470.0L372.5 470.0L375.0 470.0L377.5 470.0L380.0 470.0L382.5 470.0L385.0 470.0L387.5 470.0L390.0 470.0L392.5 470.0L395.0 470.0L397.5 470.0L400.0 470.0L402.5 470.0L405.0 470.0L407.5 470.0L410.0 470.0L412.5 470.0L415.0 470.0L417.5 470.0L420.0 470.0L422.5 470.0L425.0 470.0L427.5 470.0L430.0 470.0L432.5 470.0L435.0 470.0L437.5 470.0L440.0 470.0L442.5 470.0L445.0 470.0L447.5 470.0L450.0 470.0L452.5 470.0L455.0 470.0L457.5 470.0L460.0 470.0L462.5 470.0L465.0 470.0L467.5 470.0L470.0 470.0L472.5 470.0L475.0 470.0L477.5 470.0L480.0 470.0L482.5 470.0L485.0 470.0L487.5 470.0L490.0 470.0L492.5 470.0L495.0 470.0L497.5 470.0L500.0 470.0L502.5 470.0L505.0 470.0L507.5 470.0L510.0 470.0L512.5 470.0L515.0 470.0L517.5 470.0L520.0 470.0L522.5 470.0L525.0 470.0L527.5 470.0L530.0 470.0L532.5 470.0L535.0 470.0L537.5 470.0L540.0 470.0L542.5 470.0L545.0 470.0L547.5 470.0L550.0 470.0L552.5 470.0L555.0 470.0L557.5 470.0L560.0 470.0L562.5 470.0L565.0 470.0L567.5 470.0L570.0 470.0L572.5 470.0L575.0 470.0L577.5 470.0L580.0 470.0L582.5 470.0L585.0 470.0L587.5 470.0L590.0 470.0L592.5 470.0L595.0 470.0L597.5 470.0L600.0 470.0L602.5 470.0L605.0 470.0L607.5 470.0L610.0 470.0L612.5 470.0L615.0 470.0L617.5 470.0L620.0 470.0L622.5 470.0L625.0 470.0L627.5 470.0L630.0 470.0L632.5 470.0L635.0 470.0L637.5 470.0L640.0 470.0L642.5 470.0L645.0 470.0L647.5 470.0L650.0 470.0L652.5 470.0L655.0 470.0L657.5 470.0L660.0 470.0L662.5 470.0L665.0 470.0L667.5 470.0L670.0 470.0L672.5 470.0L675.0 470.0L677.5 470.0L680.0 470.0L682.5 470.0L685.0 470.0L687.5 469.7L690.0 465.8L692.5 462.1L695.0 457.3L697.5 453.0L700.0 450.2L702.5 446.2L705.0 442.0L707.5 438.5L710.0 379.8L712.5 353.7L715.0 347.2L717.5 342.7L720.0 323.5L722.5 311.7L725.0 310.3L727.5 308.7L730.0 300.2L732.5 297.1L735.0 293.3L737.5 288.9L740.0 283.0L742.5 279.2L745.0 273.7L747.5 267.6L750.0 264.3L752.5 265.8L755.0 268.0L757.5 269.9L760.0 270.7L762.5 274.7L765.0 276.1L767.5 278.6L770.0 282.1L772.5 285.8L775.0 286.0L777.5 290.0L780.0 289.5L782.5 286.8L785.0 286.5L787.5 289.8L790.0 293.7L792.5 297.8L795.0 295.3L797.5 300.9L800.0 306.3L802.5 310.4L805.0 311.3L807.5 316.0L810.0 317.8L812.5 331.3L815.0 342.5L817.5 358.0L820.0 376.9L822.5 413.6L825.0 441.3L827.5 444.6L830.0 448.3L832.5 402.6L835.0 384.0L837.5 373.2L840.0 364.7L842.5 353.9L845.0 350.6L847.5 345.7L850.0 339.9L852.5 339.1L855.0 337.5L857.5 335.9L860.0 333.6L862.5 331.1L865.0 329.7L867.5 328.1L870.0 320.9L872.5 318.3L875.0 318.9L877.5 314.9L880.0 315.4L882.5 316.7L885.0 319.1L887.5 317.2L890.0 319.9L892.5 329.6L895.0 335.6L897.5 345.9L900.0 350.9L902.5 353.8L905.0 355.5L907.5 359.8L910.0 361.9L912.5 367.2L915.0 374.4L917.5 382.4L920.0 399.2L922.5 454.0L925.0 457.2L927.5 459.3L930.0 463.2L932.5 466.7L935.0 470.0L937.5 470.0L940.0 470.0L942.5 470.0L945.0 470.0L947.5 470.0L950.0 470.0L952.5 470.0L955.0 470.0L957.5 470.0L960.0 470.0L962.5 470.0L965.0 470.0L967.5 470.0L970.0 470.0L972.5 470.0L975.0 470.0L977.5 470.0L980.0 470.0L982.5 470.0L985.0 470.0L987.5 470.0L990.0 470.0L992.5 470.0L995.0 470.0L997.5 470.0L1000.0 470.0L1002.5 470.0L1005.0 470.0L1007.5 470.0L1010.0 470.0L1012.5 470.0L1015.0 470.0L1017.5 470.0L1020.0 470.0L1022.5 469.5L1025.0 463.6L1027.5 460.3L1030.0 456.9L1032.5 452.5L1035.0 449.0L1037.5 445.6L1040.0 442.0L1042.5 439.4L1045.0 438.3L1047.5 439.6L1050.0 375.7L1052.5 354.0L1055.0 338.6L1057.5 325.3L1060.0 314.9L1062.5 305.8L1065.0 297.5L1067.5 289.5L1070.0 281.6L1072.5 279.6L1075.0 278.7L1077.5 276.1L1080.0 275.5L1082.5 269.4L1085.0 264.9L1087.5 257.6L1090.0 258.1L1092.5 255.8L1095.0 254.9L1097.5 250.8L1100.0 250.0L1102.5 251.9L1105.0 254.3L1107.5 254.8L1110.0 254.1L1112.5 256.7L1115.0 257.3L1117.5 257.4L1120.0 255.9L1122.5 261.3L1125.0 263.1L1127.5 269.6L1130.0 271.8L1132.5 275.9L1135.0 282.8L1137.5 286.8L1140.0 292.0L1142.5 295.0L1145.0 296.3L1147.5 297.9L1150.0 298.9L1152.5 303.0L1155.0 303.1L1157.5 306.7L1160.0 314.7L1162.5 334.0L1165.0 420.5L1167.5 427.2L1170.0 432.5L1172.5 417.1L1175.0 400.9L1177.5 390.4L1180.0 382.1L1182.5 374.3L1185.0 369.3L1187.5 364.8L1190.0 365.0L1192.5 364.4L1195.0 363.1L1197.5 359.8L1200.0 356.9L1202.5 353.9L1205.0 351.5L1207.5 347.3L1210.0 343.3L1212.5 339.9L1215.0 335.5L1217.5 333.8L1220.0 331.1L1222.5 330.8L1225.0 331.9L1227.5 333.6L1230.0 339.8L1232.5 344.9L1235.0 345.9L1237.5 349.5L1240.0 354.7L1242.5 361.3L1245.0 365.8L1247.5 371.5L1250.0 376.5L1252.5 385.5L1255.0 400.1L1257.5 420.3L1260.0 421.7L1262.5 392.2L1265.0 369.9L1267.5 360.2L1270.0 354.8L1272.5 348.6L1275.0 343.9L1277.5 339.7L1280.0 334.7L1282.5 329.4L1285.0 327.7L1287.5 323.3L1290.0 317.4L1292.5 311.5L1295.0 306.9L1297.5 303.1L1300.0 301.8L1302.5 299.2L1305.0 301.8L1307.5 302.7L1310.0 306.0L1312.5 306.5L1315.0 308.6L1317.5 315.2L1320.0 320.5L1322.5 327.2L1325.0 333.9L1327.5 344.3L1330.0 359.3L1332.5 378.1L1335.0 414.0L1337.5 442.6L1340.0 445.7L1342.5 447.2L1345.0 450.1L1347.5 454.0L1350.0 457.5L1352.5 462.1L1355.0 467.2L1357.5 470.0L1360.0 470.0L1362.5 470.0L1365.0 470.0L1367.5 470.0L1370.0 470.0L1372.5 470.0L1375.0 468.1L1377.5 465.2L1380.0 462.5L1382.5 459.1L1385.0 454.9L1387.5 450.9L1390.0 448.5L1392.5 448.2L1395.0 446.8L1397.5 444.7L1400.0 442.1L1402.5 441.1L1405.0 439.2L1407.5 435.9L1410.0 433.5L1412.5 430.8L1415.0 430.5L1417.5 431.0L1420.0 394.1L1422.5 371.4L1425.0 357.2L1427.5 344.2L1430.0 335.2L1432.5 323.8L1435.0 318.1L1437.5 313.3L1440.0 307.7L1442.5 301.4L1445.0 298.4L1447.5 299.3L1450.0 295.6L1452.5 292.5L1455.0 290.9L1457.5 283.4L1460.0 284.7L1462.5 280.9L1465.0 278.7L1467.5 275.0L1470.0 272.8L1472.5 272.3L1475.0 270.3L1477.5 271.2L1480.0 270.5L1482.5 269.8L1485.0 269.5L1487.5 275.1L1490.0 279.7L1492.5 286.0L1495.0 290.9L1497.5 296.4L1500.0 297.8L1502.5 300.8L1505.0 303.1L1507.5 303.7L1510.0 305.0L1512.5 305.0L1515.0 308.1L1517.5 311.8L1520.0 316.0L1522.5 316.6L1525.0 318.6L1527.5 324.4L1530.0 328.4L1532.5 331.2L1535.0 335.6L1537.5 337.7L1540.0 343.4L1542.5 349.5L1545.0 356.4L1547.5 366.9L1550.0 382.4L1552.5 420.7L1555.0 447.5L1557.5 448.1L1560.0 449.2L1562.5 449.6L1565.0 450.4L1567.5 452.2L1570.0 453.6L1572.5 456.3L1575.0 459.2L1577.5 462.4L1580.0 465.7L1582.5 469.4L1585.0 470.0L1587.5 470.0L1590.0 470.0L1592.5 470.0L1595.0 470.0L1597.5 470.0L1600.0 470.0L1602.5 470.0L1605.0 470.0L1607.5 470.0L1610.0 470.0L1612.5 470.0L1615.0 470.0L1617.5 470.0L1620.0 470.0L1622.5 470.0L1625.0 470.0L1627.5 470.0L1630.0 470.0L1632.5 470.0L1635.0 470.0L1637.5 470.0L1640.0 470.0L1642.5 470.0L1645.0 470.0L1647.5 470.0L1650.0 470.0L1652.5 470.0L1655.0 470.0L1657.5 470.0L1660.0 470.0L1662.5 470.0L1665.0 470.0L1667.5 470.0L1670.0 470.0L1672.5 470.0L1675.0 470.0L1677.5 470.0L1680.0 470.0L1682.5 470.0L1685.0 470.0L1687.5 470.0L1690.0 470.0L1692.5 470.0L1695.0 470.0L1697.5 470.0L1700.0 470.0L1702.5 470.0L1705.0 470.0L1707.5 470.0L1710.0 470.0L1712.5 470.0L1715.0 470.0L1717.5 470.0L1720.0 470.0L1722.5 470.0L1725.0 470.0L1727.5 470.0L1730.0 470.0L1732.5 470.0L1735.0 470.0L1737.5 470.0L1740.0 470.0L1742.5 470.0L1745.0 470.0L1747.5 470.0L1750.0 470.0L1752.5 470.0L1755.0 470.0L1757.5 470.0L1760.0 470.0L1760.0 478.0 Z"/>
+        <path id="k1" d="M-160.0 480.0L-160.0 470.0L-157.5 470.0L-155.0 470.0L-152.5 470.0L-150.0 470.0L-147.5 470.0L-145.0 470.0L-142.5 470.0L-140.0 470.0L-137.5 470.0L-135.0 470.0L-132.5 470.0L-130.0 470.0L-127.5 470.0L-125.0 470.0L-122.5 470.0L-120.0 470.0L-117.5 470.0L-115.0 470.0L-112.5 470.0L-110.0 470.0L-107.5 470.0L-105.0 470.0L-102.5 470.0L-100.0 470.0L-97.5 470.0L-95.0 470.0L-92.5 470.0L-90.0 470.0L-87.5 470.0L-85.0 470.0L-82.5 470.0L-80.0 470.0L-77.5 470.0L-75.0 470.0L-72.5 470.0L-70.0 470.0L-67.5 470.0L-65.0 470.0L-62.5 470.0L-60.0 470.0L-57.5 470.0L-55.0 470.0L-52.5 470.0L-50.0 470.0L-47.5 470.0L-45.0 470.0L-42.5 470.0L-40.0 470.0L-37.5 470.0L-35.0 470.0L-32.5 470.0L-30.0 470.0L-27.5 470.0L-25.0 470.0L-22.5 470.0L-20.0 470.0L-17.5 470.0L-15.0 470.0L-12.5 470.0L-10.0 470.0L-7.5 470.0L-5.0 470.0L-2.5 470.0L0.0 470.0L2.5 470.0L5.0 470.0L7.5 470.0L10.0 470.0L12.5 470.0L15.0 470.0L17.5 470.0L20.0 470.0L22.5 470.0L25.0 470.0L27.5 470.0L30.0 470.0L32.5 470.0L35.0 470.0L37.5 470.0L40.0 470.0L42.5 470.0L45.0 470.0L47.5 470.0L50.0 470.0L52.5 470.0L55.0 470.0L57.5 470.0L60.0 470.0L62.5 470.0L65.0 470.0L67.5 470.0L70.0 470.0L72.5 470.0L75.0 470.0L77.5 470.0L80.0 470.0L82.5 470.0L85.0 470.0L87.5 470.0L90.0 470.0L92.5 470.0L95.0 470.0L97.5 470.0L100.0 470.0L102.5 470.0L105.0 470.0L107.5 470.0L110.0 470.0L112.5 470.0L115.0 470.0L117.5 470.0L120.0 470.0L122.5 470.0L125.0 470.0L127.5 470.0L130.0 470.0L132.5 470.0L135.0 470.0L137.5 470.0L140.0 470.0L142.5 470.0L145.0 470.0L147.5 470.0L150.0 470.0L152.5 470.0L155.0 470.0L157.5 470.0L160.0 470.0L162.5 470.0L165.0 470.0L167.5 470.0L170.0 470.0L172.5 470.0L175.0 470.0L177.5 470.0L180.0 470.0L182.5 470.0L185.0 470.0L187.5 470.0L190.0 470.0L192.5 470.0L195.0 470.0L197.5 470.0L200.0 470.0L202.5 470.0L205.0 470.0L207.5 470.0L210.0 470.0L212.5 470.0L215.0 470.0L217.5 470.0L220.0 470.0L222.5 470.0L225.0 470.0L227.5 470.0L230.0 470.0L232.5 470.0L235.0 470.0L237.5 470.0L240.0 470.0L242.5 470.0L245.0 470.0L247.5 470.0L250.0 470.0L252.5 470.0L255.0 470.0L257.5 470.0L260.0 470.0L262.5 470.0L265.0 470.0L267.5 470.0L270.0 470.0L272.5 470.0L275.0 470.0L277.5 470.0L280.0 470.0L282.5 470.0L285.0 470.0L287.5 470.0L290.0 470.0L292.5 470.0L295.0 470.0L297.5 470.0L300.0 470.0L302.5 470.0L305.0 470.0L307.5 470.0L310.0 470.0L312.5 470.0L315.0 470.0L317.5 470.0L320.0 470.0L322.5 470.0L325.0 470.0L327.5 470.0L330.0 470.0L332.5 470.0L335.0 470.0L337.5 470.0L340.0 470.0L342.5 470.0L345.0 470.0L347.5 470.0L350.0 470.0L352.5 470.0L355.0 470.0L357.5 392.7L360.0 349.3L362.5 324.2L365.0 304.3L367.5 288.6L370.0 276.3L372.5 270.5L375.0 266.5L377.5 263.1L380.0 255.4L382.5 248.4L385.0 234.7L387.5 232.5L390.0 225.2L392.5 218.9L395.0 215.3L397.5 216.7L400.0 217.6L402.5 215.9L405.0 215.7L407.5 214.0L410.0 206.8L412.5 209.6L415.0 205.0L417.5 204.4L420.0 193.3L422.5 185.1L425.0 185.2L427.5 175.4L430.0 171.9L432.5 168.1L435.0 157.0L437.5 154.6L440.0 147.6L442.5 148.0L445.0 146.5L447.5 145.7L450.0 146.5L452.5 144.1L455.0 141.9L457.5 145.6L460.0 150.8L462.5 148.4L465.0 147.3L467.5 155.1L470.0 151.8L472.5 149.1L475.0 150.7L477.5 159.9L480.0 161.9L482.5 169.6L485.0 165.6L487.5 172.7L490.0 177.8L492.5 173.9L495.0 177.1L497.5 181.7L500.0 176.4L502.5 180.1L505.0 180.8L507.5 183.9L510.0 183.1L512.5 183.0L515.0 185.5L517.5 189.4L520.0 194.5L522.5 192.0L525.0 195.2L527.5 191.9L530.0 188.4L532.5 189.4L535.0 190.8L537.5 194.3L540.0 190.0L542.5 195.9L545.0 205.5L547.5 208.4L550.0 206.6L552.5 208.7L555.0 204.6L557.5 211.2L560.0 210.1L562.5 211.2L565.0 215.6L567.5 220.5L570.0 238.1L572.5 256.3L575.0 260.6L577.5 270.3L580.0 281.1L582.5 289.7L585.0 288.4L587.5 284.9L590.0 283.5L592.5 281.5L595.0 280.4L597.5 274.7L600.0 275.9L602.5 275.6L605.0 271.5L607.5 269.4L610.0 269.7L612.5 266.0L615.0 263.1L617.5 264.8L620.0 265.3L622.5 264.0L625.0 262.8L627.5 262.1L630.0 263.9L632.5 260.1L635.0 257.1L637.5 253.8L640.0 254.2L642.5 256.4L645.0 257.1L647.5 259.0L650.0 263.1L652.5 266.3L655.0 271.2L657.5 283.8L660.0 296.5L662.5 310.2L665.0 325.3L667.5 343.7L670.0 366.9L672.5 401.4L675.0 470.0L677.5 470.0L680.0 470.0L682.5 470.0L685.0 470.0L687.5 470.0L690.0 470.0L692.5 470.0L695.0 470.0L697.5 470.0L700.0 470.0L702.5 470.0L705.0 470.0L707.5 470.0L710.0 470.0L712.5 470.0L715.0 470.0L717.5 470.0L720.0 470.0L722.5 470.0L725.0 470.0L727.5 470.0L730.0 470.0L732.5 470.0L735.0 470.0L737.5 470.0L740.0 470.0L742.5 470.0L745.0 470.0L747.5 470.0L750.0 470.0L752.5 470.0L755.0 470.0L757.5 470.0L760.0 470.0L762.5 470.0L765.0 470.0L767.5 470.0L770.0 470.0L772.5 470.0L775.0 470.0L777.5 470.0L780.0 470.0L782.5 470.0L785.0 470.0L787.5 470.0L790.0 470.0L792.5 470.0L795.0 470.0L797.5 470.0L800.0 470.0L802.5 470.0L805.0 470.0L807.5 470.0L810.0 470.0L812.5 470.0L815.0 470.0L817.5 470.0L820.0 470.0L822.5 470.0L825.0 470.0L827.5 470.0L830.0 470.0L832.5 470.0L835.0 470.0L837.5 470.0L840.0 470.0L842.5 470.0L845.0 470.0L847.5 470.0L850.0 470.0L852.5 470.0L855.0 470.0L857.5 470.0L860.0 470.0L862.5 470.0L865.0 470.0L867.5 470.0L870.0 470.0L872.5 470.0L875.0 470.0L877.5 470.0L880.0 470.0L882.5 470.0L885.0 470.0L887.5 470.0L890.0 470.0L892.5 470.0L895.0 470.0L897.5 470.0L900.0 470.0L902.5 470.0L905.0 470.0L907.5 470.0L910.0 470.0L912.5 470.0L915.0 470.0L917.5 470.0L920.0 470.0L922.5 470.0L925.0 470.0L927.5 470.0L930.0 470.0L932.5 470.0L935.0 470.0L937.5 470.0L940.0 470.0L942.5 470.0L945.0 470.0L947.5 470.0L950.0 470.0L952.5 470.0L955.0 470.0L957.5 470.0L960.0 470.0L962.5 470.0L965.0 470.0L967.5 470.0L970.0 470.0L972.5 470.0L975.0 470.0L977.5 470.0L980.0 470.0L982.5 470.0L985.0 470.0L987.5 470.0L990.0 470.0L992.5 470.0L995.0 470.0L997.5 470.0L1000.0 470.0L1002.5 470.0L1005.0 470.0L1007.5 470.0L1010.0 470.0L1012.5 470.0L1015.0 470.0L1017.5 470.0L1020.0 470.0L1022.5 470.0L1025.0 470.0L1027.5 470.0L1030.0 470.0L1032.5 470.0L1035.0 470.0L1037.5 470.0L1040.0 470.0L1042.5 470.0L1045.0 470.0L1047.5 470.0L1050.0 470.0L1052.5 470.0L1055.0 470.0L1057.5 470.0L1060.0 470.0L1062.5 470.0L1065.0 470.0L1067.5 470.0L1070.0 470.0L1072.5 470.0L1075.0 470.0L1077.5 470.0L1080.0 470.0L1082.5 470.0L1085.0 470.0L1087.5 470.0L1090.0 470.0L1092.5 470.0L1095.0 470.0L1097.5 470.0L1100.0 470.0L1102.5 470.0L1105.0 470.0L1107.5 470.0L1110.0 470.0L1112.5 470.0L1115.0 470.0L1117.5 470.0L1120.0 470.0L1122.5 470.0L1125.0 470.0L1127.5 470.0L1130.0 470.0L1132.5 470.0L1135.0 470.0L1137.5 470.0L1140.0 470.0L1142.5 470.0L1145.0 470.0L1147.5 470.0L1150.0 470.0L1152.5 470.0L1155.0 470.0L1157.5 470.0L1160.0 470.0L1162.5 470.0L1165.0 470.0L1167.5 470.0L1170.0 470.0L1172.5 470.0L1175.0 470.0L1177.5 470.0L1180.0 470.0L1182.5 470.0L1185.0 470.0L1187.5 470.0L1190.0 470.0L1192.5 470.0L1195.0 470.0L1197.5 470.0L1200.0 470.0L1202.5 470.0L1205.0 470.0L1207.5 470.0L1210.0 470.0L1212.5 470.0L1215.0 470.0L1217.5 470.0L1220.0 470.0L1222.5 470.0L1225.0 470.0L1227.5 470.0L1230.0 470.0L1232.5 470.0L1235.0 470.0L1237.5 470.0L1240.0 470.0L1242.5 470.0L1245.0 470.0L1247.5 470.0L1250.0 470.0L1252.5 470.0L1255.0 470.0L1257.5 470.0L1260.0 470.0L1262.5 470.0L1265.0 470.0L1267.5 470.0L1270.0 470.0L1272.5 470.0L1275.0 470.0L1277.5 470.0L1280.0 470.0L1282.5 470.0L1285.0 470.0L1287.5 470.0L1290.0 470.0L1292.5 470.0L1295.0 470.0L1297.5 470.0L1300.0 470.0L1302.5 470.0L1305.0 470.0L1307.5 470.0L1310.0 470.0L1312.5 470.0L1315.0 470.0L1317.5 470.0L1320.0 470.0L1322.5 470.0L1325.0 470.0L1327.5 470.0L1330.0 470.0L1332.5 470.0L1335.0 470.0L1337.5 470.0L1340.0 470.0L1342.5 470.0L1345.0 470.0L1347.5 470.0L1350.0 470.0L1352.5 470.0L1355.0 470.0L1357.5 470.0L1360.0 470.0L1362.5 470.0L1365.0 470.0L1367.5 470.0L1370.0 470.0L1372.5 470.0L1375.0 470.0L1377.5 470.0L1380.0 470.0L1382.5 470.0L1385.0 470.0L1387.5 470.0L1390.0 470.0L1392.5 470.0L1395.0 470.0L1397.5 470.0L1400.0 470.0L1402.5 470.0L1405.0 470.0L1407.5 470.0L1410.0 470.0L1412.5 470.0L1415.0 470.0L1417.5 470.0L1420.0 470.0L1422.5 470.0L1425.0 470.0L1427.5 470.0L1430.0 470.0L1432.5 470.0L1435.0 470.0L1437.5 470.0L1440.0 470.0L1442.5 470.0L1445.0 470.0L1447.5 470.0L1450.0 470.0L1452.5 470.0L1455.0 470.0L1457.5 470.0L1460.0 470.0L1462.5 470.0L1465.0 470.0L1467.5 470.0L1470.0 470.0L1472.5 470.0L1475.0 470.0L1477.5 470.0L1480.0 470.0L1482.5 470.0L1485.0 470.0L1487.5 470.0L1490.0 470.0L1492.5 470.0L1495.0 470.0L1497.5 470.0L1500.0 470.0L1502.5 470.0L1505.0 470.0L1507.5 470.0L1510.0 470.0L1512.5 470.0L1515.0 470.0L1517.5 470.0L1520.0 470.0L1522.5 470.0L1525.0 470.0L1527.5 470.0L1530.0 470.0L1532.5 470.0L1535.0 470.0L1537.5 470.0L1540.0 470.0L1542.5 470.0L1545.0 470.0L1547.5 470.0L1550.0 470.0L1552.5 470.0L1555.0 470.0L1557.5 369.3L1560.0 270.8L1562.5 250.6L1565.0 234.5L1567.5 229.0L1570.0 222.7L1572.5 216.8L1575.0 212.0L1577.5 208.2L1580.0 211.8L1582.5 213.2L1585.0 211.4L1587.5 204.3L1590.0 204.8L1592.5 198.9L1595.0 197.8L1597.5 191.6L1600.0 192.0L1602.5 188.3L1605.0 190.5L1607.5 185.9L1610.0 185.9L1612.5 188.3L1615.0 188.5L1617.5 190.9L1620.0 187.8L1622.5 190.0L1625.0 187.9L1627.5 182.6L1630.0 177.6L1632.5 178.6L1635.0 183.5L1637.5 188.8L1640.0 187.6L1642.5 189.6L1645.0 187.1L1647.5 178.9L1650.0 177.7L1652.5 174.9L1655.0 175.1L1657.5 173.1L1660.0 172.7L1662.5 171.3L1665.0 170.6L1667.5 170.5L1670.0 174.9L1672.5 171.9L1675.0 167.7L1677.5 166.6L1680.0 172.8L1682.5 173.1L1685.0 175.0L1687.5 173.9L1690.0 175.7L1692.5 180.0L1695.0 176.1L1697.5 179.0L1700.0 180.5L1702.5 182.1L1705.0 186.3L1707.5 188.6L1710.0 191.6L1712.5 200.2L1715.0 206.1L1717.5 213.5L1720.0 214.3L1722.5 219.0L1725.0 228.8L1727.5 239.5L1730.0 243.6L1732.5 248.0L1735.0 249.5L1737.5 255.5L1740.0 264.8L1742.5 276.4L1745.0 285.0L1747.5 291.5L1750.0 294.3L1752.5 304.9L1755.0 312.5L1757.5 322.7L1760.0 332.1L1760.0 480.0 Z"/>
+      </defs>
+      <rect x="-300" y="470" width="2200" height="600" fill="url(#g-water)"/>
+      <g class="ripples">
+        <path class="rl" d="M659 476.0h52" stroke-width="0.61" opacity="0.66"/>
+        <path class="rd" d="M756 476.0h94" stroke-width="0.61" opacity="0.37"/>
+        <path class="rl" d="M1296 476.0h60" stroke-width="0.61" opacity="0.70"/>
+        <path class="rl" d="M339 480.1h82" stroke-width="0.61" opacity="0.30"/>
+        <path class="rd" d="M1211 480.1h97" stroke-width="0.61" opacity="0.55"/>
+        <path class="rl" d="M506 480.1h24" stroke-width="0.61" opacity="0.33"/>
+        <path class="rl" d="M1215 485.6h24" stroke-width="0.62" opacity="0.61"/>
+        <path class="rd" d="M217 485.6h24" stroke-width="0.62" opacity="0.44"/>
+        <path class="rl" d="M1084 485.6h35" stroke-width="0.62" opacity="0.62"/>
+        <path class="rl" d="M279 485.6h29" stroke-width="0.62" opacity="0.61"/>
+        <path class="rd" d="M759 491.6h34" stroke-width="0.63" opacity="0.35"/>
+        <path class="rl" d="M1467 491.6h100" stroke-width="0.63" opacity="0.41"/>
+        <path class="rl" d="M773 498.0h52" stroke-width="0.64" opacity="0.58"/>
+        <path class="rd" d="M1172 498.0h38" stroke-width="0.64" opacity="0.26"/>
+        <path class="rl" d="M971 498.0h31" stroke-width="0.64" opacity="0.48"/>
+        <path class="rl" d="M1626 498.0h52" stroke-width="0.64" opacity="0.52"/>
+        <path class="rl" d="M1374 498.0h79" stroke-width="0.64" opacity="0.55"/>
+        <path class="rd" d="M53 506.6h36" stroke-width="0.65" opacity="0.53"/>
+        <path class="rl" d="M1115 506.6h60" stroke-width="0.65" opacity="0.58"/>
+        <path class="rd" d="M640 506.6h114" stroke-width="0.65" opacity="0.60"/>
+        <path class="rl" d="M586 515.7h75" stroke-width="0.67" opacity="0.54"/>
+        <path class="rd" d="M59 515.7h43" stroke-width="0.67" opacity="0.50"/>
+        <path class="rl" d="M1380 515.7h74" stroke-width="0.67" opacity="0.32"/>
+        <path class="rl" d="M662 515.7h56" stroke-width="0.67" opacity="0.26"/>
+        <path class="rl" d="M1223 525.3h130" stroke-width="0.68" opacity="0.30"/>
+        <path class="rd" d="M844 525.3h127" stroke-width="0.68" opacity="0.23"/>
+        <path class="rd" d="M1382 525.3h51" stroke-width="0.68" opacity="0.50"/>
+        <path class="rl" d="M1492 537.5h84" stroke-width="0.70" opacity="0.24"/>
+        <path class="rd" d="M180 537.5h96" stroke-width="0.70" opacity="0.31"/>
+        <path class="rl" d="M1171 537.5h45" stroke-width="0.70" opacity="0.30"/>
+        <path class="rl" d="M1584 537.5h59" stroke-width="0.70" opacity="0.40"/>
+        <path class="rl" d="M1337 537.5h113" stroke-width="0.70" opacity="0.24"/>
+        <path class="rl" d="M709 550.7h36" stroke-width="0.72" opacity="0.41"/>
+        <path class="rl" d="M158 550.7h110" stroke-width="0.72" opacity="0.27"/>
+        <path class="rl" d="M318 550.7h91" stroke-width="0.72" opacity="0.23"/>
+        <path class="rd" d="M808 565.9h112" stroke-width="0.74" opacity="0.17"/>
+        <path class="rd" d="M607 565.9h153" stroke-width="0.74" opacity="0.25"/>
+        <path class="rl" d="M1138 584.8h74" stroke-width="0.76" opacity="0.14"/>
+        <path class="rd" d="M472 584.8h92" stroke-width="0.76" opacity="0.18"/>
+        <path class="rd" d="M885 584.8h108" stroke-width="0.76" opacity="0.15"/>
+        <path class="rl" d="M473 606.9h188" stroke-width="0.80" opacity="0.17"/>
+        <path class="rd" d="M50 606.9h127" stroke-width="0.80" opacity="0.23"/>
+        <path class="rd" d="M487 606.9h96" stroke-width="0.80" opacity="0.11"/>
+        <path class="rd" d="M66 606.9h54" stroke-width="0.80" opacity="0.20"/>
+        <path class="rl" d="M1154 631.2h158" stroke-width="0.83" opacity="0.10"/>
+        <path class="rl" d="M61 631.2h191" stroke-width="0.83" opacity="0.12"/>
+      </g>
+    </svg>
+    <div class="glint"></div>
+    <svg class="layer" data-depth="2" viewBox="0 0 1600 1000" preserveAspectRatio="none" focusable="false"><use href="#k4" fill="url(#g4)" filter="url(#f-far)"/></svg>
+    <div class="mist mist--far" data-depth="3"></div>
+    <svg class="layer" data-depth="4" viewBox="0 0 1600 1000" preserveAspectRatio="none" focusable="false"><use href="#k3" fill="url(#g3)" filter="url(#f-mid)"/></svg>
+    <div class="mist mist--mid" data-depth="5"></div>
+    <svg class="layer" data-depth="7" viewBox="0 0 1600 1000" preserveAspectRatio="none" focusable="false">
+      <g mask="url(#m-refl)" filter="url(#f-refl)"><use href="#k2" fill="#7f8b88" transform="matrix(1 0 0 -1 0 950)"/></g>
+      <use href="#k2" fill="url(#g2)"/>
+    </svg>
+    <svg class="layer" data-depth="11" viewBox="0 0 1600 1000" preserveAspectRatio="none" focusable="false">
+      <g mask="url(#m-refl)" filter="url(#f-refl)"><use href="#k1" fill="#5e6b67" transform="matrix(1 0 0 -1 0 954)"/></g>
+      <use href="#k1" fill="url(#g1)"/>
+      <g clip-path="url(#c-k1)" opacity=".55"><rect x="-150" y="120" width="1900" height="360" filter="url(#f-tex)"/></g>
+    </svg>
+    <div class="mist mist--water" data-depth="9"></div>
+  </div>
+  <div class="haze"></div>
+  <div class="shade"></div>
+  <div class="louvre">
+    <i class="blade" style="--i:0"></i><i class="blade" style="--i:1"></i><i class="blade" style="--i:2"></i><i class="blade" style="--i:3"></i>
+    <i class="blade" style="--i:4"></i><i class="blade" style="--i:5"></i><i class="blade" style="--i:6"></i><i class="blade" style="--i:7"></i>
+    <i class="blade" style="--i:8"></i><i class="blade" style="--i:9"></i><i class="blade" style="--i:10"></i><i class="blade" style="--i:11"></i>
+    <i class="blade" style="--i:12"></i><i class="blade" style="--i:13"></i><i class="blade" style="--i:14"></i><i class="blade" style="--i:15"></i>
+    <i class="blade" style="--i:16"></i><i class="blade" style="--i:17"></i><i class="blade" style="--i:18"></i><i class="blade" style="--i:19"></i>
+    <i class="blade" style="--i:20"></i><i class="blade" style="--i:21"></i><i class="blade" style="--i:22"></i><i class="blade" style="--i:23"></i>
+  </div>
+</div>
+
+<div class="page">
+  <header class="header">
+    <a class="logo appear appear--scale" href="#top" style="--d:.5s" aria-label="Hạ Long Atelier, về đầu trang">
+      <svg class="mark" viewBox="0 0 24 22" aria-hidden="true" focusable="false">
+        <rect x=".4" y="0" width="1" height="22"/><rect x="4.9" y="0" width="1.5" height="22"/><rect x="9.6" y="0" width="2.4" height="22"/>
+        <rect x="14.9" y="0" width="3.3" height="22"/><rect class="mark-a" x="20.1" y="0" width="3.9" height="22"/>
+      </svg>
+      <span class="wm" aria-hidden="true"><b>Hạ Long</b><span class="at">Atelier</span></span>
+    </a>
+    <nav class="nav" id="site-nav" aria-label="Điều hướng chính">
+      <a class="appear appear--soft" href="#cong-trinh" style="--d:.6s;--dur:.9s">Công trình</a>
+      <a class="appear appear--scale" href="#phuong-phap" style="--d:.68s;--dur:.9s">Phương pháp</a>
+      <a class="appear appear--soft" href="#xuong-ve" style="--d:.76s;--dur:.9s">Xưởng vẽ</a>
+      <a class="nav-only" href="#lien-he">Liên hệ</a>
+      <p class="nav-foot micro">Gió mùa Đông Bắc · tháng 11 – tháng 3</p>
+    </nav>
+    <a class="contact appear appear--fade" href="#lien-he" style="--d:1.62s;--dur:.8s">Liên hệ
+      <svg viewBox="0 0 13 9" aria-hidden="true" focusable="false"><path d="M0 4.5h11.6M8.2 1l3.5 3.5L8.2 8" fill="none" stroke="currentColor" stroke-width="1.1"/></svg></a>
+    <button class="burger appear appear--scale" type="button" style="--d:.9s" aria-controls="site-nav" aria-expanded="false" aria-label="Mở menu"><i></i><i></i><i></i></button>
+  </header>
+
+  <main class="hero" id="top">
+    <div class="copy">
+      <h1>
+        <span class="mask-line"><span class="appear appear--mask" style="--d:.92s;--dur:1.25s">Mở phòng ra vịnh,</span></span>
+        <span class="mask-line"><span class="appear appear--mask" style="--d:1.06s;--dur:1.25s">khép lại trước <span class="nb">gió bấc.</span></span></span>
+      </h1>
+      <p class="lede appear appear--soft" style="--d:1.26s;--dur:1.25s">Xưởng kiến trúc chuyên resort ven biển Quảng Ninh. Chúng tôi xoay từng phòng về một hòn đảo đá, rồi dựng vách lá chớp gỗ để giữ mùa đông ở bên ngoài.</p>
+      <div class="actions">
+        <a class="btn btn-solid appear appear--wipe-x" href="#gui-khu-dat" style="--d:1.42s">Gửi bản đồ khu đất
+          <svg viewBox="0 0 18 10" aria-hidden="true" focusable="false"><path d="M0 5h16.4M12.4 1l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg></a>
+        <a class="btn btn-text appear appear--side" href="#cong-trinh" style="--d:1.54s">Xem công trình</a>
+      </div>
+    </div>
+
+    <aside class="wind" aria-label="Khí hậu Quảng Ninh">
+      <svg class="rose" viewBox="0 0 58 62" aria-hidden="true" focusable="false">
+        <text x="29" y="5.5" text-anchor="middle">B</text>
+        <circle class="ring appear appear--fade" style="--d:1.7s" cx="29" cy="31" r="23"/>
+        <path class="tick" d="M29 6.5v3.5M29 52v3.5M4.5 31H8M50 31h3.5"/>
+        <g transform="translate(29 31)"><path class="pt appear appear--grow" style="--d:1.78s" d="M0 0L1.5 -4.2L0 -10L-1.5 -4.2Z"/></g>
+        <g transform="translate(29 31) rotate(90)"><path class="pt appear appear--grow" style="--d:1.82s" d="M0 0L1.5 -5.4L0 -13L-1.5 -5.4Z"/></g>
+        <g transform="translate(29 31) rotate(135)"><path class="pt appear appear--grow" style="--d:1.86s" d="M0 0L1.3 -3L0 -7L-1.3 -3Z"/></g>
+        <g transform="translate(29 31) rotate(180)"><path class="pt appear appear--grow" style="--d:1.9s" d="M0 0L1.3 -2.6L0 -6L-1.3 -2.6Z"/></g>
+        <g transform="translate(29 31) rotate(225)"><path class="pt appear appear--grow" style="--d:1.94s" d="M0 0L1.3 -2.6L0 -6L-1.3 -2.6Z"/></g>
+        <g transform="translate(29 31) rotate(270)"><path class="pt appear appear--grow" style="--d:1.98s" d="M0 0L1.3 -3L0 -7L-1.3 -3Z"/></g>
+        <g transform="translate(29 31) rotate(315)"><path class="pt appear appear--grow" style="--d:2.02s" d="M0 0L1.5 -4.2L0 -10L-1.5 -4.2Z"/></g>
+        <g transform="translate(29 31) rotate(45)"><path class="pt pt--ne appear appear--grow" style="--d:2.1s;--dur:1.3s" d="M0 0L2.2 -8.6L0 -21L-2.2 -8.6Z"/></g>
+      </svg>
+      <p class="micro">
+        <span class="mask-line"><span class="appear appear--mask" style="--d:1.84s;--dur:.9s">Gió mùa Đông Bắc</span></span>
+        <span class="mask-line"><span class="appear appear--mask dim" style="--d:1.92s;--dur:.9s">Tháng 11 – tháng 3</span></span>
+      </p>
+    </aside>
+  </main>
+</div>
+
+<script>
+/* ==== motion-kit.js (inlined) ==== */
+/* ==========================================================================
+   motion-kit.js: small, dependency-free helpers for choreographed motion.
+   Exposes window.MK. Every helper respects prefers-reduced-motion and leaves the page fully
+   visible if anything fails.
+
+   Optional head snippet for WAAPI intros: hides [data-mk] targets before first paint, with a
+   4 s failsafe. Put it in its own script tag inside <head>:
+     (function(r){try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches&&typeof r.animate==="function"){r.classList.add("mk-intro");window.__mkFailsafe=setTimeout(function(){r.classList.remove("mk-intro")},4000)}}catch(e){}})(document.documentElement);
+   ========================================================================== */
+(function (w, d) {
+  "use strict";
+  var reduced = w.matchMedia && w.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var EASE = {
+    expo: "cubic-bezier(.16,1,.3,1)", draw: "cubic-bezier(.62,.04,.22,1)",
+    wipe: "cubic-bezier(.77,0,.18,1)", settle: "cubic-bezier(.25,1,.5,1)"
+  };
+  function $$(s, root) { return typeof s === "string" ? Array.prototype.slice.call((root || d).querySelectorAll(s)) : (s.length != null ? Array.prototype.slice.call(s) : [s]); }
+
+  /* 1. CSS entrances: mark finished elements, force-finish if animations never run. */
+  function appear(root) {
+    var els = $$(".appear", root);
+    els.forEach(function (el) {
+      el.addEventListener("animationend", function (e) { if (e.target === el) el.classList.add("is-in"); });
+    });
+    var done = function () { els.forEach(function (el) { el.classList.add("is-in"); }); };
+    if (reduced) return done();
+    requestAnimationFrame(function () { requestAnimationFrame(function () {
+      var running = d.getAnimations ? d.getAnimations().length : 0;
+      if (!running) done();
+    }); });
+    // Belt and braces: whatever happens, everything is in after 4 s.
+    setTimeout(done, 4000);
+  }
+
+  /* 2. WAAPI intro orchestration.
+     MK.intro(function (add) { add(el, keyframes, {duration, delay, easing}); … }, {images: [img]})
+     Waits for fonts + image decode (hard start at 1200 ms), plays once, then removes html.mk-intro
+     and cancels every animation in the same frame so static CSS is the final state. */
+  function intro(build, opts) {
+    opts = opts || {};
+    var root = d.documentElement;
+    if (reduced || typeof root.animate !== "function") { root.classList.remove("mk-intro"); return; }
+    var anims = [], started = false;
+    function add(el, kf, o) { if (!el) return null; o = o || {}; o.fill = "both"; if (!o.easing) o.easing = EASE.expo; var a = el.animate(kf, o); anims.push(a); return a; }
+    function play() {
+      if (started) return; started = true;
+      requestAnimationFrame(function () {
+        try { build(add, EASE); } catch (err) { console.error(err); }
+        clearTimeout(w.__mkFailsafe);
+        root.classList.remove("mk-intro"); // fill:both now holds the from-states
+        Promise.all(anims.map(function (a) { return a.finished; })).then(function () {
+          anims.forEach(function (a) { a.cancel(); }); anims.length = 0;
+        }, function () {});
+      });
+    }
+    var waits = [d.fonts ? d.fonts.ready : 0];
+    (opts.images || []).forEach(function (img) { if (img && img.decode) waits.push(img.decode().catch(function () {})); });
+    Promise.all(waits).then(play, play);
+    setTimeout(play, opts.hardStart || 1200);
+  }
+
+  /* 3. Masked lines: each [data-mk="mask"] wrapper's first child rises from 105%. */
+  function maskLines(add, sel, o) {
+    o = o || {};
+    $$(sel).forEach(function (wrap, i) {
+      var inner = wrap.firstElementChild || wrap;
+      add(inner, [{ translate: "0 105%" }, { translate: "0 0" }],
+        { duration: o.duration || 800, delay: (o.start || 0) + i * (o.step || 70), easing: EASE.expo });
+    });
+  }
+
+  /* 4. Letters: split a word into spans with optional per-letter kerning (in em), rise each. */
+  function letters(el, o) {
+    o = o || {};
+    var text = el.textContent; var kern = o.kerning || [];
+    el.setAttribute("aria-label", text.trim());
+    el.textContent = "";
+    var spans = [];
+    Array.prototype.forEach.call(text, function (ch, i) {
+      var s = d.createElement("span");
+      s.setAttribute("aria-hidden", "true");
+      s.style.display = "inline-block";
+      if (ch === " ") s.innerHTML = "&nbsp;"; else s.textContent = ch;
+      if (kern[i]) s.style.marginLeft = kern[i] + "em";
+      el.appendChild(s); spans.push(s);
+    });
+    return spans;
+  }
+  function riseLetters(add, spans, o) {
+    o = o || {};
+    spans.forEach(function (s, i) {
+      add(s, [{ translate: "0 105%" }, { translate: "0 0" }],
+        { duration: o.duration || 1000, delay: (o.start || 200) + i * (o.step || 38), easing: EASE.expo });
+    });
+  }
+
+  /* 5. Draw SVG strokes outward from their midpoint. */
+  function draw(add, paths, o) {
+    o = o || {};
+    $$(paths).forEach(function (p, i) {
+      var L = p.getTotalLength();
+      var from = o.fromMiddle === false
+        ? { strokeDasharray: "0px " + L + "px", strokeDashoffset: "0px" }
+        : { strokeDasharray: "0px " + L + "px", strokeDashoffset: (-L / 2) + "px" };
+      add(p, [from, { strokeDasharray: L + "px " + L + "px", strokeDashoffset: "0px" }],
+        { duration: o.duration || 1250, delay: (o.delays && o.delays[i] != null) ? o.delays[i] : (o.start || 100) + i * (o.step || 60), easing: EASE.draw });
+    });
+  }
+
+  /* 6. Clip-path wipes. from: "left" | "center" | "bottom". */
+  function wipe(add, el, o) {
+    o = o || {};
+    var start = { left: "inset(0 100% 0 0)", center: "inset(0 50% 0 50%)", bottom: "inset(100% 0 0 0)" }[o.from || "left"];
+    $$(el).forEach(function (e, i) {
+      add(e, [{ clipPath: start }, { clipPath: "inset(0 0% 0 0%)" }],
+        { duration: o.duration || 750, delay: (o.delay || 0) + i * (o.step || 90), easing: EASE.wipe });
+    });
+  }
+
+  /* 7. Magnet: element drifts toward the cursor inside a padding zone (fine pointers only). */
+  function magnet(el, o) {
+    o = o || {};
+    if (reduced || !w.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    var pad = o.padding || 120, strength = o.strength || 4;
+    el.style.willChange = "transform";
+    w.addEventListener("mousemove", function (e) {
+      var r = el.getBoundingClientRect(), cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+      var inside = Math.abs(e.clientX - cx) < r.width / 2 + pad && Math.abs(e.clientY - cy) < r.height / 2 + pad;
+      el.style.transition = inside ? "transform .3s ease-out" : "transform .6s ease-in-out";
+      el.style.transform = inside ? "translate3d(" + (e.clientX - cx) / strength + "px," + (e.clientY - cy) / strength + "px,0)" : "translate3d(0,0,0)";
+    }, { passive: true });
+  }
+
+  /* 8. Reveal on scroll (opt-in hiding: CSS hides [data-reveal] only under html.mk-reveal). */
+  function reveal(o) {
+    o = o || {};
+    var els = $$("[data-reveal]");
+    if (reduced || !("IntersectionObserver" in w) || !els.length) return;
+    d.documentElement.classList.add("mk-reveal");
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("is-revealed"); io.unobserve(en.target); } });
+    }, { rootMargin: o.rootMargin || "0px 0px -10% 0px", threshold: 0 });
+    els.forEach(function (el) { io.observe(el); });
+  }
+
+  /* 9. Opposing rows that move with scroll. rows: [{el, dir: 1|-1}] */
+  function scrollRows(section, rows, o) {
+    o = o || {};
+    if (reduced) return;
+    var factor = o.factor || 0.3, offset = o.offset || 200, ticking = false;
+    function update() {
+      ticking = false;
+      var top = section.getBoundingClientRect().top + w.scrollY;
+      var v = (w.scrollY - top + w.innerHeight) * factor;
+      rows.forEach(function (r) { r.el.style.transform = "translate3d(" + (r.dir > 0 ? v - offset : -(v - offset)) + "px,0,0)"; });
+    }
+    rows.forEach(function (r) { r.el.style.willChange = "transform"; });
+    w.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
+  /* 10. Character scroll reveal: opacity .2 → 1 across ['start 0.8', 'end 0.2']. */
+  function charReveal(el) {
+    var text = el.textContent;
+    el.setAttribute("aria-label", text.trim());
+    el.textContent = "";
+    var chars = Array.prototype.map.call(text, function (ch) {
+      var s = d.createElement("span"); s.setAttribute("aria-hidden", "true"); s.textContent = ch; el.appendChild(s); return s;
+    });
+    if (reduced) return;
+    var n = chars.length, ticking = false;
+    function update() {
+      ticking = false;
+      var r = el.getBoundingClientRect(), vh = w.innerHeight;
+      var start = vh * 0.8, end = vh * 0.2;              // element top at 80% → element bottom at 20%
+      var p = (start - r.top) / ((start - end) + r.height);
+      p = Math.max(0, Math.min(1, p));
+      chars.forEach(function (c, i) { var t = Math.max(0, Math.min(1, p * n - i)); c.style.opacity = (0.2 + 0.8 * t).toFixed(3); });
+    }
+    w.addEventListener("scroll", function () { if (!ticking) { ticking = true; requestAnimationFrame(update); } }, { passive: true });
+    update();
+  }
+
+  /* 11. Mobile menu: body.menu-open toggle with aria, Escape, link click and resize close. */
+  function menu(burger, nav, o) {
+    o = o || {};
+    var bp = o.breakpoint || 901;
+    function set(open) {
+      d.body.classList.toggle("menu-open", open);
+      burger.setAttribute("aria-expanded", String(open));
+      burger.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+    }
+    burger.addEventListener("click", function () { set(!d.body.classList.contains("menu-open")); });
+    $$("a", nav).forEach(function (a) { a.addEventListener("click", function () { set(false); }); });
+    w.addEventListener("keydown", function (e) { if (e.key === "Escape") set(false); });
+    var mq = w.matchMedia("(min-width: " + bp + "px)");
+    (mq.addEventListener ? mq.addEventListener.bind(mq, "change") : mq.addListener.bind(mq))(function (m) { if (m.matches) set(false); });
+    return set;
+  }
+
+  w.MK = { reduced: reduced, EASE: EASE, appear: appear, intro: intro, maskLines: maskLines, letters: letters,
+    riseLetters: riseLetters, draw: draw, wipe: wipe, magnet: magnet, reveal: reveal, scrollRows: scrollRows,
+    charReveal: charReveal, menu: menu };
+})(window, document);
+</script>
+<script>
+/* ==== shader-field.js (inlined) ==== */
+/* ShaderField(canvas, options): a WebGL domain-warped noise field with film grain.
+   Slow and liquid. Depending on colours it reads as dusk sky, ink in water, molten metal, aurora
+   or fog over water. Archetypes A, B and F media layer, or a fallback inside a media slot.
+   Options (all optional):
+     colors  ["#hex", …]  2–4 colours from dark to light   default ["#05070a","#1b2a33","#6f8c96","#d9e2e4"]
+     speed   number       time multiplier                   default 1  (keep ≤ 1.5; slow is premium)
+     scale   number       noise scale                       default 1.6
+     warp    number       domain-warp strength              default 1.2
+     grain   number       film grain 0–0.2                  default 0.06
+     focus   [x,y]        bright area centre, 0–1 uv        default [0.5, 0.25]
+     vignette number      edge darkening 0–1                default 0.55
+     mouse   boolean      subtle parallax toward pointer    default true
+   Falls back to a CSS gradient of the same colours if WebGL is unavailable.
+   Honours prefers-reduced-motion (one still frame), pauses when hidden, caps DPR at 1.5.
+   Returns { stop() }. */
+function ShaderField(canvas, o) {
+  o = o || {};
+  var colors = (o.colors || ["#05070a", "#1b2a33", "#6f8c96", "#d9e2e4"]).slice(0, 4);
+  while (colors.length < 4) colors.push(colors[colors.length - 1]);
+  var reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var gl = canvas.getContext("webgl", { antialias: false, premultipliedAlpha: false }) || canvas.getContext("experimental-webgl");
+  if (!gl) {
+    canvas.style.background = "radial-gradient(120% 90% at 50% 20%, " + colors[3] + " 0%, " + colors[2] + " 25%, " + colors[1] + " 55%, " + colors[0] + " 100%)";
+    return { stop: function () {} };
+  }
+  function hex(h) { h = h.replace("#", ""); if (h.length === 3) h = h.replace(/./g, "$&$&"); var n = parseInt(h, 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; }
+  var vs = "attribute vec2 p;void main(){gl_Position=vec4(p,0.,1.);}";
+  var fs = [
+    "precision highp float;",
+    "uniform vec2 r;uniform float t;uniform vec2 m;uniform vec3 c0,c1,c2,c3;uniform float sc,wp,gr,vg;uniform vec2 fc;",
+    "float h(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}",
+    "float n(vec2 p){vec2 i=floor(p),f=fract(p);vec2 u=f*f*(3.-2.*f);",
+    " return mix(mix(h(i),h(i+vec2(1,0)),u.x),mix(h(i+vec2(0,1)),h(i+vec2(1,1)),u.x),u.y);}",
+    "float fbm(vec2 p){float v=0.,a=.5;mat2 R=mat2(.8,-.6,.6,.8);for(int i=0;i<5;i++){v+=a*n(p);p=R*p*2.02;a*=.5;}return v;}",
+    "void main(){",
+    " vec2 uv=gl_FragCoord.xy/r;vec2 p=(gl_FragCoord.xy-.5*r)/min(r.x,r.y)*sc+m*.15;",
+    " float T=t*.05;",
+    " vec2 q=vec2(fbm(p+vec2(0.,T)),fbm(p+vec2(5.2,1.3)-T));",
+    " vec2 w=vec2(fbm(p+wp*q+vec2(1.7,9.2)+.15*T),fbm(p+wp*q+vec2(8.3,2.8)-.126*T));",
+    " float f=fbm(p+wp*w);",
+    " float d=distance(uv,vec2(fc.x,1.-fc.y));",
+    " f=clamp(f*1.15+.35*(1.-smoothstep(0.,.9,d))-.12,0.,1.);",
+    " vec3 col=mix(c0,c1,smoothstep(.0,.38,f));col=mix(col,c2,smoothstep(.35,.7,f));col=mix(col,c3,smoothstep(.68,1.,f)*.85);",
+    " float v=smoothstep(1.15,.25,length(uv-.5)*1.4);col*=mix(1.,v,vg);",
+    " col+=(h(gl_FragCoord.xy+fract(t*7.13))-.5)*gr;",
+    " gl_FragColor=vec4(col,1.);}"
+  ].join("\n");
+  function sh(type, src) { var s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s); if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s)); return s; }
+  var prog = gl.createProgram();
+  try { gl.attachShader(prog, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(prog); }
+  catch (e) { console.warn("ShaderField:", e); canvas.style.background = colors[1]; return { stop: function () {} }; }
+  gl.useProgram(prog);
+  var buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]), gl.STATIC_DRAW);
+  var loc = gl.getAttribLocation(prog, "p"); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+  var U = {}; ["r", "t", "m", "c0", "c1", "c2", "c3", "sc", "wp", "gr", "vg", "fc"].forEach(function (k) { U[k] = gl.getUniformLocation(prog, k); });
+  colors.forEach(function (c, i) { gl.uniform3fv(U["c" + i], hex(c)); });
+  gl.uniform1f(U.sc, o.scale || 1.6); gl.uniform1f(U.wp, o.warp == null ? 1.2 : o.warp);
+  gl.uniform1f(U.gr, o.grain == null ? 0.06 : o.grain); gl.uniform1f(U.vg, o.vignette == null ? 0.55 : o.vignette);
+  var focus = o.focus || [0.5, 0.25]; gl.uniform2f(U.fc, focus[0], focus[1]);
+  var speed = o.speed == null ? 1 : o.speed, mx = 0, my = 0, tx = 0, ty = 0, raf = 0, running = true, dead = false;
+  function resize() {
+    var dpr = Math.min(window.devicePixelRatio || 1, 1.5), r = canvas.getBoundingClientRect();
+    canvas.width = Math.max(1, Math.round(r.width * dpr)); canvas.height = Math.max(1, Math.round(r.height * dpr));
+    gl.viewport(0, 0, canvas.width, canvas.height); gl.uniform2f(U.r, canvas.width, canvas.height);
+    if (reduced) draw(20000);
+  }
+  function draw(ms) {
+    mx += (tx - mx) * 0.04; my += (ty - my) * 0.04;
+    gl.uniform1f(U.t, ms / 1000 * speed); gl.uniform2f(U.m, mx, my);
+    gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+  function loop(ms) { if (!running) return; draw(ms); raf = requestAnimationFrame(loop); }
+  if (o.mouse !== false && !reduced && matchMedia("(pointer: fine)").matches) {
+    addEventListener("pointermove", function (e) { tx = e.clientX / innerWidth - .5; ty = .5 - e.clientY / innerHeight; }, { passive: true });
+  }
+  resize(); addEventListener("resize", resize);
+  document.addEventListener("visibilitychange", function () {
+    if (reduced || dead) return;
+    if (document.hidden) { running = false; cancelAnimationFrame(raf); } else if (!running) { running = true; raf = requestAnimationFrame(loop); }
+  });
+  if (!reduced) raf = requestAnimationFrame(loop);
+  return { stop: function () { dead = true; running = false; cancelAnimationFrame(raf); removeEventListener("resize", resize); } };
+}
+</script>
+<script>
+(function () {
+  MK.appear();
+  /* Mobile menu (same behaviour as MK.menu, Vietnamese labels): Escape, link click and widening past 900 px close it. */
+  var burger = document.querySelector(".burger"), nav = document.getElementById("site-nav");
+  function setMenu(open) {
+    document.body.classList.toggle("menu-open", open);
+    burger.setAttribute("aria-expanded", String(open));
+    burger.setAttribute("aria-label", open ? "Đóng menu" : "Mở menu");
+  }
+  burger.addEventListener("click", function () { setMenu(!document.body.classList.contains("menu-open")); });
+  nav.querySelectorAll("a").forEach(function (a) { a.addEventListener("click", function () { setMenu(false); }); });
+  addEventListener("keydown", function (e) { if (e.key === "Escape") setMenu(false); });
+  var wide = matchMedia("(min-width: 901px)");
+  (wide.addEventListener ? wide.addEventListener.bind(wide, "change") : wide.addListener.bind(wide))(function (m) { if (m.matches) setMenu(false); });
+
+  /* Fog: pale, slow, brightest where the low sun sits behind the mist (upper left). */
+  try {
+    ShaderField(document.getElementById("fog"), {
+      colors: ["#c5cac6", "#d6d9d4", "#e6e5df", "#f5f3ed"],
+      speed: .55, scale: 1.25, warp: 1.1, grain: .03, focus: [.24, .2], vignette: .16, mouse: true
+    });
+  } catch (e) { /* the CSS sky on .media stays */ }
+
+  /* Moving your head inside the room: background layers drift with the pointer, the louvres (nearest) slide
+     the other way. Fine pointers only, never with reduced motion. */
+  if (MK.reduced || !matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+  var layers = Array.prototype.slice.call(document.querySelectorAll(".scene [data-depth]"));
+  var louvre = document.querySelector(".louvre");
+  var tx = 0, ty = 0, x = 0, y = 0, raf = 0;
+  function tick() {
+    x += (tx - x) * .06; y += (ty - y) * .06;
+    layers.forEach(function (el) { var k = +el.getAttribute("data-depth"); el.style.transform = "translate3d(" + (x * k * 1.1).toFixed(2) + "px," + (y * k * .45).toFixed(2) + "px,0)"; });
+    louvre.style.translate = (-x * 22).toFixed(2) + "px 0";
+    raf = (Math.abs(tx - x) > .001 || Math.abs(ty - y) > .001) ? requestAnimationFrame(tick) : 0;
+  }
+  addEventListener("pointermove", function (e) {
+    tx = e.clientX / innerWidth - .5; ty = e.clientY / innerHeight - .5;
+    if (!raf) raf = requestAnimationFrame(tick);
+  }, { passive: true });
+})();
+</script>
+</body>
+</html>
