@@ -153,3 +153,7 @@ Nhiều font đẹp trên Google Fonts **không có dấu tiếng Việt**: Inst
 Skill được đúc kết từ việc khảo sát khoảng 440 mẫu hero trên [motionsites.ai](https://motionsites.ai), cùng với cách họ viết prompt đặc tả chi tiết. Skill không chứa nội dung prompt, hình ảnh hay tài sản nào của MotionSites. Mọi trang mẫu trong repo đều do Claude dựng mới, với thương hiệu và nội dung hư cấu.
 
 **Tác giả:** HPhat ([@vhphat2206](https://github.com/vhphat2206)). Skill được xây dựng cùng Claude.
+
+## Giấy phép
+
+[MIT](LICENSE): bạn được tự do dùng, sửa đổi và chia sẻ lại skill, kể cả cho mục đích thương mại, miễn là giữ tên tác giả và nội dung giấy phép.
